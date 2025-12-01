@@ -1,0 +1,275 @@
+// app/api/admin/import/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import * as XLSX from 'xlsx';
+import { createServerClient } from '@/lib/supabaseServer';
+
+// raw row จาก Excel
+type RawExcelRow = { [key: string]: any };
+
+// ให้ตรง constraint ใน DB
+type FoodType =
+  | 'normal'
+  | 'no_pork'
+  | 'vegetarian'
+  | 'vegan'
+  | 'halal'
+  | 'seafood_allergy'
+  | 'other';
+
+// row ที่เตรียมแล้วสำหรับใส่ใน attendees
+type PreparedRow = {
+  full_name: string;
+  ticket_token: string;
+  phone: string | null;
+  organization: string | null;
+  job_position: string | null;
+  province: string | null;
+  qr_image_url: string | null;
+  food_type: FoodType | null;
+};
+
+// แปลงค่าจาก Excel → food_type ที่ใช้ใน DB
+function normalizeFoodType(value: any): FoodType | null {
+  if (value == null) return null;
+
+  const s = String(value).trim().toLowerCase();
+  if (!s) return null;
+
+  switch (s) {
+    // อาหารทั่วไป
+    case 'normal':
+    case 'ทั่วไป':
+    case 'อาหารทั่วไป':
+      return 'normal';
+
+    // ไม่ทานหมู
+    case 'no_pork':
+    case 'no pork':
+    case 'ไม่ทานหมู':
+    case 'ไม่กินหมู':
+    case 'งดหมู':
+      return 'no_pork';
+
+    // มังสวิรัติ
+    case 'vegetarian':
+    case 'มังสวิรัติ':
+    case 'มังสะวิรัติ':
+      return 'vegetarian';
+
+    // เจ / วีแกน
+    case 'vegan':
+    case 'วีแกน':
+    case 'เจ':
+    case 'เจ / วีแกน':
+      return 'vegan';
+
+    // ฮาลาล
+    case 'halal':
+    case 'ฮาลาล':
+      return 'halal';
+
+    // แพ้อาหารทะเล
+    case 'seafood_allergy':
+    case 'seafood':
+    case 'แพ้อาหารทะเล':
+      return 'seafood_allergy';
+
+    // อื่น ๆ
+    case 'other':
+    case 'อื่น':
+    case 'อื่น ๆ':
+      return 'other';
+
+    default:
+      // ถ้าไม่รู้จัก ให้จัดเป็น 'other' แทนจะได้ไม่ชน constraint
+      return 'other';
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const supabase = createServerClient();
+
+    // ✅ ดึง host ของ request (ลองใช้ x-forwarded-host ก่อน แล้วค่อย host)
+    const originHost =
+      req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? null;
+
+    // 1) รับไฟล์จาก FormData
+    const formData = await req.formData();
+    const file = formData.get('file');
+
+    if (!(file instanceof Blob)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'ไม่พบไฟล์ที่อัปโหลด หรือรูปแบบไม่ถูกต้อง',
+        },
+        { status: 400 }
+      );
+    }
+
+    // 2) อ่านไฟล์ Excel ด้วย xlsx
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows: RawExcelRow[] = XLSX.utils.sheet_to_json(sheet, {
+      defval: null,
+    });
+
+    // 3) map จาก Excel → โครงสร้าง attendees (ตาม schema ใหม่)
+    const prepared: PreparedRow[] = rows
+      .map((row) => {
+        const full_name =
+          row.full_name ??
+          row['full_name'] ??
+          row['ชื่อ-นามสกุล'] ??
+          row['ชื่อ-สกุล'] ??
+          row['ชื่อ'] ??
+          null;
+
+        const ticket_token =
+          row.ticket_token ??
+          row['ticket_token'] ??
+          row['Token'] ??
+          row['token'] ??
+          row['โทเคน'] ??
+          null;
+
+        const phone =
+          row.phone ??
+          row['เบอร์โทร'] ??
+          row['โทรศัพท์'] ??
+          row['phone_number'] ??
+          null;
+
+        const organization =
+          row.organization ??
+          row['หน่วยงาน'] ??
+          row['หน่วยงาน/สังกัด'] ??
+          row['องค์กร'] ??
+          null;
+
+        const job_position =
+          row.job_position ??
+          row['job_position'] ??
+          row['ตำแหน่ง'] ??
+          row['ตำแหน่งงาน'] ??
+          null;
+
+        const province =
+          row.province ??
+          row['province'] ??
+          row['จังหวัด'] ??
+          null;
+
+        const qr_image_url =
+          row.qr_image_url ??
+          row['qr_image_url'] ??
+          row['QR URL'] ??
+          row['qr_url'] ??
+          null;
+
+        const food_type_raw =
+          row.food_type ??
+          row['food_type'] ??
+          row['ประเภทอาหาร'] ??
+          null;
+
+        if (!full_name || !ticket_token) return null;
+
+        return {
+          full_name: String(full_name).trim(),
+          ticket_token: String(ticket_token).trim(),
+          phone: phone ? String(phone).trim() : null,
+          organization: organization ? String(organization).trim() : null,
+          job_position: job_position ? String(job_position).trim() : null,
+          province: province ? String(province).trim() : null,
+          qr_image_url: qr_image_url ? String(qr_image_url).trim() : null,
+          food_type: normalizeFoodType(food_type_raw),
+        };
+      })
+      .filter(Boolean) as PreparedRow[];
+
+    // 4) เช็กกรณีไม่พบข้อมูลที่นำเข้า
+    if (prepared.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            'ไม่พบข้อมูลที่พร้อมนำเข้า (ตรวจสอบว่ามีคอลัมน์ ชื่อ-นามสกุล และ Token ในไฟล์ หรือมีข้อมูลอย่างน้อย 1 แถว)',
+        },
+        { status: 400 }
+      );
+    }
+
+    // 5) ดึง event ตัวแรกมาใช้เป็น event_id
+    const { data: events, error: eventError } = await supabase
+      .from('events')
+      .select('id')
+      .limit(1);
+
+    if (eventError || !events || events.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            'ไม่พบ event ในฐานข้อมูล กรุณาสร้างรายการ event ก่อนจึงจะนำเข้ารายชื่อได้',
+        },
+        { status: 400 }
+      );
+    }
+
+    const eventId = events[0].id as string;
+
+    // 6) upsert ลง attendees ตาม schema ใหม่ + origin_host
+    const { data: inserted, error: insertError } = await supabase
+      .from('attendees')
+      .upsert(
+        prepared.map((row) => ({
+          event_id: eventId,
+          full_name: row.full_name,
+          phone: row.phone,
+          organization: row.organization,
+          job_position: row.job_position,
+          province: row.province,
+          qr_image_url: row.qr_image_url,
+          food_type: row.food_type,
+          ticket_token: row.ticket_token,
+          origin_host: originHost, // ✅ เก็บ host ไว้ในแต่ละแถว
+        })),
+        { onConflict: 'ticket_token' }
+      )
+      .select('id');
+
+    if (insertError) {
+      console.error('IMPORT INSERT ERROR', insertError);
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            'เกิดข้อผิดพลาดระหว่างการบันทึกข้อมูลเข้าฐานข้อมูล (เช่น ticket_token ซ้ำ หรือข้อมูลไม่ตรง constraint)',
+          detail: insertError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    // 7) ตอบกลับสำเร็จ
+    return NextResponse.json({
+      ok: true,
+      imported: inserted?.length ?? 0,
+      message: `นำเข้าข้อมูลสำเร็จ ${inserted?.length ?? 0} รายการ`,
+    });
+  } catch (err) {
+    console.error('IMPORT ROUTE ERROR', err);
+    return NextResponse.json(
+      {
+        ok: false,
+        message: 'เกิดข้อผิดพลาดระหว่างการประมวลผลไฟล์',
+      },
+      { status: 500 }
+    );
+  }
+}

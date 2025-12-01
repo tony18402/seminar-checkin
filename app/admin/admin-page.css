@@ -1,0 +1,3118 @@
+/* -------------------------------------------------- Global base styles (elder-friendly) -------------------------------------------------- */
+:root {
+    /* Colors - Warm & Comfortable Palette */
+    --bg-deep: #f5f5f0; /* พื้นหลังเบจอ่อน สบายตา */
+    --bg-card: #ffffff; /* การ์ดขาวสะอาด */
+    --bg-card-soft: rgba(255, 255, 255, 0.95);
+    --border-soft: rgba(139, 92, 56, 0.2); /* ขอบสีน้ำตาลอ่อน */
+    --border-strong: rgba(139, 92, 56, 0.4);
+    --text-main: #3b2f2f; /* ตัวหนังสือสีน้ำตาลเข้ม อ่านง่าย */
+    --text-soft: #6b5d54; /* ตัวหนังสือสีน้ำตาลกลาง */
+    --text-strong: #1a1515; /* ตัวหนังสือสีดำเขียว ชัดเจน */
+    
+    /* Primary Colors - Warm & Trustworthy */
+    --primary-green-start: #5cb85c; /* เขียวอ่อนสดใส */
+    --primary-green-end: #449d44;
+    --primary-green-border: rgba(92, 184, 92, 0.8);
+    --primary-blue-start: #5bc0de; /* น้ำเงินอ่อน */
+    --primary-blue-end: #46b8da;
+    --primary-blue-border: rgba(91, 192, 222, 0.9);
+    
+    /* Accent Colors - Warm & Gentle */
+    --accent-badge-bg: rgba(255, 248, 240, 0.9); /* ครีมอ่อน */
+    --accent-badge-border: rgba(139, 92, 56, 0.3);
+    --error-bg: rgba(240, 173, 78, 0.2); /* ส้มอ่อนแทนสีแดง */
+    --error-border: rgba(240, 173, 78, 0.7);
+    --error-text-main: #8a6d3b; /* น้ำตาลเข้ม */
+    --error-text-title: #a0826d;
+    
+    /* Border Radius - Softer & More Accessible */
+    --radius-xl: 20px;
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-pill: 50px;
+    
+    /* Shadows - Softer & Less Harsh */
+    --shadow-deep: 0 8px 24px rgba(139, 92, 56, 0.15);
+    --shadow-medium: 0 6px 18px rgba(139, 92, 56, 0.12);
+    --shadow-soft: 0 4px 12px rgba(139, 92, 56, 0.08);
+    
+    /* Transitions - Slightly Slower for Elderly */
+    --transition-fast: 0.2s ease-out;
+    --transition-slow: 0.4s ease-out;
+    
+    /* New variables for enhanced design */
+    --glow-primary: 0 0 20px rgba(91, 192, 222, 0.4);
+    --glow-success: 0 0 20px rgba(92, 184, 92, 0.4);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+}
+
+/* -------------------------------------------------- Global Reset -------------------------------------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* -------------------------------------------------- HTML and Body Layout -------------------------------------------------- */
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+/* -------------------------------------------------- Body Styling (elder-friendly) -------------------------------------------------- */
+body {
+    font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif; /* เพิ่มฟอนต์ที่อ่านง่าย */
+    background-color: #f5f5f0; /* พื้นหลังเบจอ่อน */
+    background: linear-gradient(135deg, #f5f5f0 0%, #e8e4d9 50%, #ddd4c0 100%); /* ไล่สีเบจ */
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.7; /* ระยะห่างบรรทัดเหมาะสม */
+    font-size: 22px; /* ฐานฟอนต์ใหญ่ขึ้น */
+    text-size-adjust: 100%;
+    word-wrap: break-word;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ให้ input / ปุ่มตัวใหญ่ตามด้วย */
+:where(input, button, select, textarea) {
+    font-size: 1.1rem;
+}
+
+/* -------------------------------------------------- Accessibility Enhancements -------------------------------------------------- */
+/* มือถือจอเล็ก – ตัวใหญ่หน่อย */
+@media (max-width: 480px) {
+    body {
+        font-size: 24px;
+    }
+}
+
+/* Tablet ขึ้นไป */
+@media (min-width: 768px) {
+    body {
+        font-size: 24px;
+    }
+}
+
+/* Desktop ใหญ่ ๆ */
+@media (min-width: 1024px) {
+    body {
+        font-size: 26px;
+    }
+}
+
+/* -------------------------------------------------- Smooth Scrolling -------------------------------------------------- */
+html {
+    scroll-behavior: smooth;
+}
+
+/* -------------------------------------------------- Focus Styles for Accessibility -------------------------------------------------- */
+:where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid #5cb85c; /* เขียวอ่อนที่เห็นง่าย */
+    outline-offset: 4px;
+    box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.3);
+}
+
+/* -------------------------------------------------- Background Colors and Contrast -------------------------------------------------- */
+body {
+    background: linear-gradient(135deg, #f5f5f0 0%, #e8e4d9 50%, #ddd4c0 100%);
+    color: var(--text-main);
+}
+
+/* -------------------------------------------------- Text Size Adjustments for Readability -------------------------------------------------- */
+@media (min-width: 1024px) {
+    body {
+        font-size: 26px; /* Desktop ใหญ่ ฟอนต์อ่านสบายมากสำหรับผู้สูงอายุ */
+    }
+}
+
+/* -------------------------------------------------- ลิงก์พื้นฐาน -------------------------------------------------- */
+a {
+    color: #5cb85c; /* เขียวสดใส ดูเป็นกันเอง */
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    transition: color var(--transition-fast);
+}
+a:hover {
+    text-decoration: underline;
+    color: #449d44;
+}
+
+/* -------------------------------------------------- Global Page Layout (สำหรับทุกหน้า) -------------------------------------------------- */
+.page-wrap {
+    min-height: 100vh;
+    padding: 32px;
+    background: linear-gradient(135deg, #f5f5f0 0%, #e8e4d9 50%, #ddd4c0 100%);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    font-size: 1.05em;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+}
+
+.page-wrap--center {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f5f5f0 0%, #e8e4d9 50%, #ddd4c0 100%);
+}
+
+/* -------------------------------------------------- Background Gradient overlay (ไฟเบา ๆ) -------------------------------------------------- */
+.page-gradient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 10% 20%, rgba(255, 248, 240, 0.3), transparent 55%),
+                radial-gradient(circle at 80% 0%, rgba(255, 239, 213, 0.2), transparent 55%);
+    opacity: 0.6;
+    mix-blend-mode: soft-light;
+    z-index: 0;
+}
+
+/* -------------------------------------------------- Utility classes -------------------------------------------------- */
+.u-text-soft {
+    color: var(--text-soft);
+}
+.u-text-strong {
+    color: var(--text-strong);
+}
+.u-mt-sm {
+    margin-top: 4px;
+}
+.u-mt-md {
+    margin-top: 8px;
+}
+.u-mt-lg {
+    margin-top: 16px;
+}
+.u-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* -------------------------------------------------- Animations -------------------------------------------------- */
+/* ปิด motion ถ้าผู้ใช้ตั้งค่าลดการเคลื่อนไหว */
+@media (prefers-reduced-motion: reduce) {
+    .page-gradient {
+        opacity: 0.45;
+    }
+    * {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* -------------------------------------------------- Floating particles animation -------------------------------------------------- */
+.floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    animation: float 15s infinite ease-in-out;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.4;
+    }
+    90% {
+        opacity: 0.4;
+    }
+    50% {
+        transform: translateY(-100px) translateX(50px) scale(1.2);
+    }
+}
+
+/* -------------------------------------------------- Glass morphism effect -------------------------------------------------- */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* -------------------------------------------------- Admin Layout -------------------------------------------------- */
+
+/* กล่อง layout ตรงกลางแบบในภาพ */
+.admin-layout {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 24px auto 40px;  /* เว้นหัว-ท้ายเหมือนในภาพ */
+  display: flex;
+  flex-direction: column;
+  gap: 30px;            /* ช่องไฟระหว่าง header / summary / filter / table */
+  padding: 30px;        /* ระยะขอบด้านในเท่าที่เห็นในภาพ */
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-header {
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.admin-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    border-radius: 2px;
+}
+
+.admin-header__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+.admin-header__title {
+    margin: 20px 0 10px;
+    font-size: 36px;  
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text-strong);
+    position: relative;
+    display: inline-block;
+}
+
+.admin-header__title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    transition: width 0.5s ease;
+}
+
+.admin-header:hover .admin-header__title::after {
+    width: 100%;
+}
+
+.admin-header__subtitle {
+    margin: 0;
+    font-size: 22px;  
+    color: var(--text-soft);
+}
+
+/* -------------------------------------------------- Admin Summary Cards -------------------------------------------------- */
+.admin-summary {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.admin-summary__item {
+    flex: 1;
+    min-width: 220px;
+    padding: 30px 40px;
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    border: 2px solid var(--border-soft);
+    box-shadow: var(--shadow-medium);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-summary__item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s ease;
+}
+
+.admin-summary__item:hover::before {
+    transform: scaleX(1);
+}
+
+.admin-summary__item:nth-child(2) {
+    border-color: rgba(92, 184, 92, 0.6);
+}
+
+.admin-summary__item:nth-child(2)::before {
+    background: linear-gradient(90deg, var(--primary-green-start), var(--primary-green-end));
+}
+
+.admin-summary__item:nth-child(3) {
+    border-color: rgba(91, 192, 222, 0.6);
+}
+
+.admin-summary__item:nth-child(3)::before {
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+}
+
+.admin-summary__item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-deep);
+}
+
+.admin-summary__label {
+    font-size: 20px;
+    color: var(--text-soft);
+}
+
+.admin-summary__value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-strong);
+    position: relative;
+    display: inline-block;
+}
+
+@media (min-width: 768px) {
+    .admin-summary__value {
+        font-size: 40px;
+    }
+}
+
+.admin-summary__value--green {
+    color: #449d44;
+}
+
+.admin-summary__value--blue {
+    color: #46b8da;
+}
+
+/* -------------------------------------------------- Admin Filters -------------------------------------------------- */
+.admin-filters {
+    margin-top: 20px;
+}
+
+.admin-filters__form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 20px 25px;
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    border: 2px solid var(--border-soft);
+    box-shadow: var(--shadow-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-filters__form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(91, 192, 222, 0.1) 0%, rgba(91, 192, 222, 0) 70%);
+    transform: translate(30px, -30px);
+}
+
+.admin-filters__field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-filters__field--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.admin-filters__label {
+    font-size: 18px;
+    color: var(--text-main);
+}
+
+.admin-filters__input,
+.admin-filters__select {
+    border-radius: var(--radius-pill);
+    border: 2px solid var(--border-strong);
+    background: #ffffff;
+    padding: 12px 18px;
+    font-size: 20px;
+    color: var(--text-main);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    position: relative;
+}
+
+.admin-filters__input::placeholder {
+    color: var(--text-soft);
+}
+
+.admin-filters__input:focus,
+.admin-filters__select:focus {
+    outline: none;
+    border-color: #5bc0de;
+    box-shadow: 0 0 0 1px rgba(91, 192, 222, 0.5);
+    background: #ffffff;
+}
+
+.admin-filters__actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-filters__button {
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 12px 20px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(to right, #5bc0de, #46b8da);
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-filters__button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.admin-filters__button:hover::before {
+    left: 100%;
+}
+
+.admin-filters__button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-deep);
+    filter: brightness(1.05);
+}
+
+.admin-filters__button:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-soft);
+}
+
+.admin-filters__link-reset {
+    font-size: 18px;
+    color: var(--text-soft);
+    text-decoration: underline;
+}
+
+/* -------------------------------------------------- Admin Table -------------------------------------------------- */
+.admin-table__wrapper {
+    margin-top: 6px;
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    border: 2px solid var(--border-soft);
+    box-shadow: var(--shadow-deep);
+    overflow: hidden;
+    position: relative;
+}
+
+.admin-table__wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+}
+
+.admin-table__inner {
+    max-height: 560px;
+    overflow: auto;
+    border-radius: var(--radius-lg);
+}
+
+.admin-table__inner::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.admin-table__inner::-webkit-scrollbar-track {
+    background: #f5f5f0;
+}
+
+.admin-table__inner::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+}
+
+.admin-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #ffffff;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    text-align: left;
+    color: var(--text-main);
+}
+
+.admin-table th {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    position: relative;
+}
+
+.admin-table th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.admin-table:hover th::after {
+    transform: scaleX(1);
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background: #ffffff;
+}
+
+.admin-table tbody tr:nth-child(odd) {
+    background: var(--accent-badge-bg);
+}
+
+.admin-table tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(91, 192, 222, 0.1);
+    transform: scale(1.01);
+}
+
+.admin-table__empty {
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 18px;
+    color: var(--text-soft);
+}
+
+.admin-table__name {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-table__token {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 16px;
+    color: #5bc0de;
+}
+
+/* -------------------------------------------------- Admin Form -------------------------------------------------- */
+.admin-form__section {
+    margin-top: 24px;
+    padding: 22px 22px 26px;
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    box-shadow: var(--shadow-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-form__section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(91, 192, 222, 0.1) 0%, rgba(91, 192, 222, 0) 70%);
+    transform: translate(50px, -50px);
+}
+
+@media (min-width: 768px) {
+    .admin-form__section {
+        padding: 26px 26px 30px;
+    }
+}
+
+.admin-form__title {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--text-main);
+    position: relative;
+    display: inline-block;
+}
+
+.admin-form__title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    transition: width 0.5s ease;
+}
+
+.admin-form__section:hover .admin-form__title::after {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .admin-form__title {
+        font-size: 28px;
+    }
+}
+
+.admin-form__subtitle {
+    margin: 0 0 20px;
+    font-size: 18px;
+    color: var(--text-soft);
+}
+
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.admin-form__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px 18px;
+}
+
+@media (min-width: 768px) {
+    .admin-form__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.admin-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-form__field--full {
+    grid-column: 1 / -1;
+}
+
+.admin-form__label {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.admin-form__input {
+    width: 100%;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-strong);
+    background: #ffffff;
+    padding: 10px 13px;
+    font-size: 20px;
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    position: relative;
+}
+
+.admin-form__input::placeholder {
+    color: var(--text-soft);
+}
+
+.admin-form__input:focus {
+    border-color: #5bc0de;
+    box-shadow: 0 0 0 1px rgba(91, 192, 222, 0.5);
+    background: #ffffff;
+}
+
+.admin-form__input--readonly {
+    background: var(--accent-badge-bg);
+    color: var(--text-soft);
+    cursor: default;
+}
+
+.admin-form__error {
+    margin: 4px 2px 0;
+    font-size: 16px;
+    color: #8a6d3b;
+}
+
+.admin-form__actions {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.admin-form__button {
+    min-width: 160px;
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    padding: 10px 18px;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-form__button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.admin-form__button:hover::before {
+    left: 100%;
+}
+
+.admin-form__button--primary {
+    background: linear-gradient(to right, #5bc0de, #46b8da);
+    border-color: rgba(91, 192, 222, 0.8);
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+}
+
+.admin-form__button--primary:hover {
+    background: linear-gradient(to right, #46b8da, #5bc0de);
+    transform: translateY(-2px);
+    box-shadow: var(--glow-primary);
+}
+
+.admin-form__button--primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-soft);
+}
+
+.admin-form__button--ghost {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--text-main);
+}
+
+.admin-form__button--ghost:hover {
+    background: var(--accent-badge-bg);
+}
+
+.admin-form__button:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+}
+
+.admin-table__name {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.admin-link-edit {
+    display: inline-block;
+    font-size: 16px;
+    color: #5bc0de;
+    text-decoration: underline;
+    cursor: pointer;
+    position: relative;
+}
+
+.admin-link-edit::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #46b8da;
+    transition: width 0.3s ease;
+}
+
+.admin-link-edit:hover::after {
+    width: 100%;
+}
+
+.admin-link-edit:hover {
+    color: #46b8da;
+}
+
+/* -------------------------------------------------- Admin Import -------------------------------------------------- */
+.admin-import {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.admin-import__input {
+    display: none;
+}
+
+.admin-import__button {
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #5cb85c, #449d44);
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-import__button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.admin-import__button:hover::before {
+    left: 100%;
+}
+
+.admin-import__button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: var(--glow-success);
+}
+
+.admin-import__button:disabled {
+    opacity: 0.7;
+    cursor: default;
+    box-shadow: none;
+}
+
+.admin-import__hint {
+    font-size: 14px;
+    color: var(--text-soft);
+}
+
+/* -------------------------------------------------- Admin Export Button -------------------------------------------------- */
+.admin-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    border: 2px solid rgba(91, 192, 222, 0.9);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+    text-decoration: none;
+    white-space: nowrap;
+    background: linear-gradient(135deg, #5bc0de, #46b8da);
+    box-shadow: var(--shadow-medium);
+    transform: translateY(0);
+    transition: background 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease, filter 0.16s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-export-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.admin-export-btn:hover::before {
+    left: 100%;
+}
+
+.admin-export-btn:hover {
+    background: linear-gradient(135deg, #46b8da, #5bc0de);
+    box-shadow: var(--glow-primary);
+    filter: brightness(1.05);
+    transform: translateY(-2px);
+}
+
+.admin-export-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-soft);
+    filter: brightness(0.98);
+}
+
+.admin-export-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #5bc0de, 0 0 0 4px rgba(91, 192, 222, 0.8);
+}
+
+@media (max-width: 640px) {
+    .admin-export-btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 16px;
+        padding: 10px 14px;
+    }
+}
+
+/* -------------------------------------------------- Admin Navigation -------------------------------------------------- */
+.admin-nav {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--border-soft);
+    padding-bottom: 8px;
+    position: relative;
+}
+
+.admin-nav::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    width: 0;
+    transition: width 0.5s ease;
+}
+
+.admin-nav:hover::after {
+    width: 100%;
+}
+
+.admin-nav__list {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.admin-nav__list-item {
+    flex-shrink: 0;
+}
+
+.admin-nav__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    color: var(--text-main);
+    background: var(--accent-badge-bg);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-nav__item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.admin-nav__item:hover::before {
+    left: 100%;
+}
+
+.admin-nav__item:hover {
+    background: rgba(91, 192, 222, 0.1);
+    border-color: rgba(91, 192, 222, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(91, 192, 222, 0.2);
+}
+
+.admin-nav__item--active {
+    background: linear-gradient(135deg, #5bc0de, #46b8da);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: var(--shadow-medium);
+}
+
+/* -------------------------------------------------- Floating Action Button -------------------------------------------------- */
+.fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5bc0de, #46b8da);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-deep);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1000;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+    box-shadow: var(--glow-primary);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+/* -------------------------------------------------- Notification Toast -------------------------------------------------- */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: white;
+    padding: 16px 24px;
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-deep);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast--success {
+    border-left: 4px solid var(--primary-green-end);
+}
+
+.toast--error {
+    border-left: 4px solid var(--error-border);
+}
+
+.toast--info {
+    border-left: 4px solid var(--primary-blue-end);
+}
+
+.toast__icon {
+    font-size: 20px;
+}
+
+.toast--success .toast__icon {
+    color: var(--primary-green-end);
+}
+
+.toast--error .toast__icon {
+    color: var(--error-text-main);
+}
+
+.toast--info .toast__icon {
+    color: var(--primary-blue-end);
+}
+
+.toast__message {
+    font-size: 16px;
+    color: var(--text-main);
+}
+
+/* -------------------------------------------------- Loading Spinner -------------------------------------------------- */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* -------------------------------------------------- Progress Bar -------------------------------------------------- */
+.progress-bar {
+    height: 8px;
+    background-color: var(--accent-badge-bg);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    border-radius: var(--radius-pill);
+    width: 0;
+    transition: width 0.5s ease;
+}
+
+/* -------------------------------------------------- Tooltip -------------------------------------------------- */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip__text {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--text-strong);
+    color: white;
+    text-align: center;
+    border-radius: var(--radius-md);
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+}
+
+.tooltip:hover .tooltip__text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* -------------------------------------------------- Modal -------------------------------------------------- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal__content {
+    background-color: white;
+    margin: auto;
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    width: 80%;
+    max-width: 600px;
+    box-shadow: var(--shadow-deep);
+    animation: slideIn 0.3s;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.modal__title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.modal__close {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal__close:hover {
+    color: var(--text-main);
+}
+
+.modal__body {
+    margin-bottom: 20px;
+}
+
+.modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* -------------------------------------------------- Admin Delete Button -------------------------------------------------- */
+.admin-delete-btn {
+    /* ใช้ตัวแปรจาก admin-page.css */
+    min-width: 120px;
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    padding: 10px 18px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    
+    /* สีพื้นฐานและเงา - ใช้โทนสีแดง/ส้มเพื่อบ่งบอกการลบ */
+    background: linear-gradient(135deg, #f0ad4e, #ec971f);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(240, 173, 78, 0.3);
+
+    /* Transition สำหรับการเคลื่อนไหวที่ลื่นไหล */
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden; /* สำคัญสำหรับเอฟเฟกต์ shimmer */
+}
+
+/* เพิ่มไอคอนถังขยะ */
+.admin-delete-btn::before {
+    content: '🗑️';
+    font-size: 18px;
+    margin-right: 4px;
+}
+
+/* เอฟเฟกต์ Shimmer ที่จะเลื่อนผ่านปุ่มเมื่อ hover */
+.admin-delete-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.admin-delete-btn:hover::after {
+    left: 100%;
+}
+
+/* สถานะเมื่อ Hover */
+.admin-delete-btn:hover:not(:disabled) {
+    transform: translateY(-2px); /* ยกปุ่มขึ้นเล็กน้อย */
+    box-shadow: 0 6px 16px rgba(240, 173, 78, 0.4); /* เพิ่มความเข้มของเงา */
+    filter: brightness(1.05); /* ทำให้ปุ่มดูสว่างขึ้นเล็กน้อย */
+}
+
+/* สถานะเมื่อกดปุ่ม (Active) */
+.admin-delete-btn:active:not(:disabled) {
+    transform: translateY(0); /* กลับสู่ตำแหน่งเดิม */
+    box-shadow: 0 2px 8px rgba(240, 173, 78, 0.3); /* ลดเงาลง */
+}
+
+/* สถานะเมื่อปุ่มถูกปิดใช้งาน (Disabled) ระหว่างการโหลด */
+.admin-delete-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* สถานะโหลด (แสดง Spinner) */
+.admin-delete-btn[data-loading="true"] {
+    color: transparent; /* ซ่อนข้อความ "กำลังลบ…" */
+    pointer-events: none; /* ป้องกันการคลิกซ้ำ */
+}
+
+/* สร้าง Spinner โดยใช้ Pseudo-element */
+.admin-delete-btn[data-loading="true"]::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3); /* วงกลมขอบนอก */
+    border-radius: 50%;
+    border-top-color: #ffffff; /* วงกลมขอบบนที่หมุน */
+    animation: spin 1s ease-in-out infinite;
+}
+
+/* Keyframes สำหรับการหมุนของ Spinner */
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* การปรับแต่งเพิ่มเติมสำหรับหน้าจอขนาดเล็ก */
+@media (max-width: 640px) {
+    .admin-delete-btn {
+        width: 100%; /* ทำให้ปุ่มเต็มความกว้าง */
+        font-size: 16px;
+        padding: 12px 16px;
+    }
+}
+
+/* -------------------------------------------------- Admin Import Button -------------------------------------------------- */
+.admin-import {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.admin-import__input {
+    display: none;
+}
+
+.admin-import__button {
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #5cb85c, #449d44);
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+/* เพิ่มไอคอนนำเข้า */
+.admin-import__button::before {
+    content: '📤';
+    font-size: 18px;
+    margin-right: 4px;
+}
+
+/* เอฟเฟกต์ Shimmer ที่จะเลื่อนผ่านปุ่มเมื่อ hover */
+.admin-import__button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.admin-import__button:hover::after {
+    left: 100%;
+}
+
+/* สถานะเมื่อ Hover */
+.admin-import__button:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(92, 184, 92, 0.5);
+    filter: brightness(1.05);
+}
+
+/* สถานะเมื่อกดปุ่ม (Active) */
+.admin-import__button:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(92, 184, 92, 0.4);
+}
+
+/* สถานะเมื่อปุ่มถูกปิดใช้งาน (Disabled) ระหว่างการอัปโหลด */
+.admin-import__button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    background: linear-gradient(135deg, #449d44, #3d8b3d);
+}
+
+/* สถานะโหลด (แสดง Spinner) */
+.admin-import__button[data-loading="true"] {
+    color: transparent;
+    pointer-events: none;
+    background: linear-gradient(135deg, #449d44, #3d8b3d);
+}
+
+/* สร้าง Spinner โดยใช้ Pseudo-element */
+.admin-import__button[data-loading="true"]::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+    z-index: 2;
+}
+
+/* สร้างวงกลมพื้นหลังสำหรับ Spinner */
+.admin-import__button[data-loading="true"]::before {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* เพิ่มเอฟเฟกต์ระลอกคลื่นเมื่อคลิก */
+.admin-import__button .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    z-index: 3;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ปรับแต่งข้อความแจ้งเตือน */
+.admin-import__hint {
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    background: var(--accent-badge-bg);
+    border-left: 4px solid var(--primary-green-end);
+    color: var(--text-main);
+    animation: fadeIn 0.3s ease-out;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+/* ถ้าข้อความแจ้งเตือนเป็นข้อความผิดพลาด */
+.admin-import__hint.error {
+    background: var(--error-bg);
+    border-left-color: var(--error-border);
+    color: var(--error-text-main);
+}
+
+/* Keyframes สำหรับการหมุนของ Spinner */
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* Keyframes สำหรับเอฟเฟกต์พัลส์ของพื้นหลัง Spinner */
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+}
+
+/* Keyframes สำหรับการแสดงตัวของข้อความแจ้งเตือน */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* การปรับแต่งเพิ่มเติมสำหรับหน้าจอขนาดเล็ก */
+@media (max-width: 640px) {
+    .admin-import__button {
+        width: 100%;
+        font-size: 16px;
+        padding: 14px 16px;
+    }
+    
+    .admin-import__button:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.01);
+    }
+    
+    .admin-import__button:active:not(:disabled) {
+        transform: translateY(0) scale(0.99);
+    }
+}
+
+/* -------------------------------------------------- Admin Slip Upload Button -------------------------------------------------- */
+.admin-slipupload {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+}
+
+.admin-slipupload input[type="file"] {
+    display: none;
+}
+
+.admin-slipupload__button {
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #5bc0de, #46b8da);
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+/* เพิ่มไอคอนแนบไฟล์ */
+.admin-slipupload__button::before {
+    content: '📎';
+    font-size: 18px;
+    margin-right: 4px;
+}
+
+/* เอฟเฟกต์ Shimmer ที่จะเลื่อนผ่านปุ่มเมื่อ hover */
+.admin-slipupload__button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.admin-slipupload__button:hover::after {
+    left: 100%;
+}
+
+/* สถานะเมื่อ Hover */
+.admin-slipupload__button:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(91, 192, 222, 0.5);
+    filter: brightness(1.05);
+}
+
+/* สถานะเมื่อกดปุ่ม (Active) */
+.admin-slipupload__button:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(91, 192, 222, 0.4);
+}
+
+/* สถานะเมื่อปุ่มถูกปิดใช้งาน (Disabled) ระหว่างการอัปโหลด */
+.admin-slipupload__button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    background: linear-gradient(135deg, #46b8da, #39a3c4);
+}
+
+/* สถานะโหลด (แสดง Spinner) */
+.admin-slipupload__button[data-loading="true"] {
+    color: transparent;
+    pointer-events: none;
+    background: linear-gradient(135deg, #46b8da, #39a3c4);
+}
+
+/* สร้าง Spinner โดยใช้ Pseudo-element */
+.admin-slipupload__button[data-loading="true"]::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+    z-index: 2;
+}
+
+/* สร้างวงกลมพื้นหลังสำหรับ Spinner */
+.admin-slipupload__button[data-loading="true"]::before {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* สถานะสำเร็จ (แสดงไอคอนเช็ค) */
+.admin-slipupload__button[data-success="true"] {
+    background: linear-gradient(135deg, #5cb85c, #449d44);
+    box-shadow: 0 4px 12px rgba(92, 184, 92, 0.4);
+    animation: successPulse 0.5s ease-out;
+}
+
+.admin-slipupload__button[data-success="true"]::after {
+    content: '✓';
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    animation: checkmark 0.5s ease-out;
+    z-index: 2;
+}
+
+/* เพิ่มเอฟเฟกต์ระลอกคลื่นเมื่อคลิก */
+.admin-slipupload__button .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    z-index: 3;
+}
+
+/* -------------------------------------------------- Message Styling (แก้ไขแล้ว) -------------------------------------------------- */
+.admin-slipupload__message {
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    max-width: 100%;
+    word-wrap: break-word;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ไอคอนสำหรับข้อความแจ้งเตือน - ใช้ span แทน */
+.admin-slipupload__message-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* ข้อความแจ้งเตือนสำเร็จ */
+.admin-slipupload__message[data-type="success"] {
+    background: var(--accent-badge-bg);
+    border-left: 4px solid var(--primary-green-end);
+    color: var(--text-main);
+    position: relative;
+}
+
+.admin-slipupload__message[data-type="success"] .admin-slipupload__message-icon {
+    background: var(--primary-green-end);
+}
+
+/* เพิ่มเอฟเฟกต์ wave สำหรับข้อความแจ้งเตือนสำเร็จ */
+.admin-slipupload__message[data-type="success"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-green-end), transparent);
+    animation: wave 2s linear infinite;
+}
+
+/* ข้อความแจ้งเตือนผิดพลาด */
+.admin-slipupload__message[data-type="error"] {
+    background: var(--error-bg);
+    border-left: 4px solid var(--error-border);
+    color: var(--error-text-main);
+    position: relative;
+}
+
+.admin-slipupload__message[data-type="error"] .admin-slipupload__message-icon {
+    background: var(--error-border);
+}
+
+/* เพิ่มเอฟเฟกต์ wave สำหรับข้อความแจ้งเตือนผิดพลาด */
+.admin-slipupload__message[data-type="error"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--error-border), transparent);
+    animation: wave 2s linear infinite;
+}
+
+/* -------------------------------------------------- Keyframes -------------------------------------------------- */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(15deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes wave {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* การปรับแต่งเพิ่มเติมสำหรับหน้าจอขนาดเล็ก */
+@media (max-width: 640px) {
+    .admin-slipupload__button {
+        width: 100%;
+        font-size: 16px;
+        padding: 14px 16px;
+    }
+    
+    .admin-slipupload__button:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.01);
+    }
+    
+    .admin-slipupload__button:active:not(:disabled) {
+        transform: translateY(0) scale(0.99);
+    }
+}
+
+/* เพิ่มเอฟเฟกต์สำหรับธีมมืด (ถ้ามี) */
+@media (prefers-color-scheme: dark) {
+    .admin-slipupload__button {
+        background: linear-gradient(135deg, #46b8da, #39a3c4);
+        box-shadow: 0 4px 12px rgba(70, 184, 218, 0.4);
+    }
+    
+    .admin-slipupload__button:hover:not(:disabled) {
+        box-shadow: 0 8px 25px rgba(70, 184, 218, 0.6);
+    }
+    
+    .admin-slipupload__button[data-loading="true"] {
+        background: linear-gradient(135deg, #39a3c4, #2e8ca8);
+    }
+    
+    .admin-slipupload__button[data-success="true"] {
+        background: linear-gradient(135deg, #449d44, #3d8b3d);
+        box-shadow: 0 4px 12px rgba(68, 157, 68, 0.4);
+    }
+}
+
+/* -------------------------------------------------- เพิ่มเอฟเฟกต์พิเศษสำหรับปุ่มทั้งหมด -------------------------------------------------- */
+/* เพิ่มเอฟเฟกต์ glow พิเศษเมื่อ hover */
+.admin-delete-btn:hover:not(:disabled),
+.admin-import__button:hover:not(:disabled),
+.admin-slipupload__button:hover:not(:disabled) {
+    box-shadow: var(--glow-primary);
+}
+
+/* เพิ่มเอฟเฟกต์ glow สำเร็จสำหรับปุ่มนำเข้าและอัปโหลดสลิป */
+.admin-import__button[data-success="true"],
+.admin-slipupload__button[data-success="true"] {
+    box-shadow: var(--glow-success);
+}
+
+/* เพิ่มเอฟเฟกต์พาร์ติเคิลเมื่อสำเร็จ */
+.admin-import__button[data-success="true"]::before,
+.admin-slipupload__button[data-success="true"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+    animation: particle-explosion 0.8s ease-out forwards;
+    z-index: 3;
+}
+
+@keyframes particle-explosion {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(20);
+        opacity: 0;
+    }
+}
+
+/* เพิ่มเอฟเฟกต์ loading bar สำหรับปุ่มทั้งหมด */
+.admin-delete-btn[data-loading="true"]::after,
+.admin-import__button[data-loading="true"]::after,
+.admin-slipupload__button[data-loading="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: rgba(255, 255, 255, 0.8);
+    animation: loading-bar 2s ease-in-out infinite;
+    z-index: 3;
+}
+
+@keyframes loading-bar {
+    0% {
+        width: 0;
+        left: 0;
+    }
+    50% {
+        width: 100%;
+        left: 0;
+    }
+    100% {
+        width: 0;
+        left: 100%;
+    }
+}
+
+/* -------------------------------------------------- Admin Force Checkin Button -------------------------------------------------- */
+.admin-forcecheckin {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.admin-forcecheckin__button {
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #5bc0de, #46b8da);
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+/* เพิ่มไอคอนเช็กอิน */
+.admin-forcecheckin__button::before {
+    content: '✅';
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+/* เอฟเฟกต์ Shimmer ที่จะเลื่อนผ่านปุ่มเมื่อ hover */
+.admin-forcecheckin__button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.admin-forcecheckin__button:hover::after {
+    left: 100%;
+}
+
+/* สถานะเมื่อ Hover */
+.admin-forcecheckin__button:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(91, 192, 222, 0.5);
+    filter: brightness(1.05);
+}
+
+/* สถานะเมื่อกดปุ่ม (Active) */
+.admin-forcecheckin__button:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(91, 192, 222, 0.4);
+}
+
+/* สถานะเมื่อปุ่มถูกปิดใช้งาน (Disabled) ระหว่างการโหลด */
+.admin-forcecheckin__button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    background: linear-gradient(135deg, #46b8da, #39a3c4);
+}
+
+/* สถานะโหลด (แสดง Spinner) */
+.admin-forcecheckin__button[data-loading="true"] {
+    color: transparent;
+    pointer-events: none;
+    background: linear-gradient(135deg, #46b8da, #39a3c4);
+}
+
+/* สร้าง Spinner โดยใช้ Pseudo-element */
+.admin-forcecheckin__button[data-loading="true"]::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+    z-index: 2;
+}
+
+/* สร้างวงกลมพื้นหลังสำหรับ Spinner */
+.admin-forcecheckin__button[data-loading="true"]::before {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* สถานะ Uncheckin (แสดงไอคอนยกเลิก) */
+.admin-forcecheckin__button[data-action="uncheckin"] {
+    background: linear-gradient(135deg, #f0ad4e, #ec971f);
+    box-shadow: 0 4px 12px rgba(240, 173, 78, 0.3);
+}
+
+.admin-forcecheckin__button[data-action="uncheckin"]:hover:not(:disabled) {
+    box-shadow: 0 8px 25px rgba(240, 173, 78, 0.5);
+}
+
+.admin-forcecheckin__button[data-action="uncheckin"]:disabled {
+    background: linear-gradient(135deg, #ec971f, #d58512);
+}
+
+.admin-forcecheckin__button[data-action="uncheckin"][data-loading="true"] {
+    background: linear-gradient(135deg, #ec971f, #d58512);
+}
+
+/* เปลี่ยนไอคอนสำหรับการยกเลิก */
+.admin-forcecheckin__button[data-action="uncheckin"]::before {
+    content: '❌';
+}
+
+/* สถานะไม่มีสลิป (แสดงไอคอนคำเตือน) */
+.admin-forcecheckin__button[data-no-slip="true"] {
+    background: linear-gradient(135deg, #d9534f, #c9302c);
+    box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+}
+
+.admin-forcecheckin__button[data-no-slip="true"]:hover:not(:disabled) {
+    box-shadow: 0 8px 25px rgba(217, 83, 79, 0.5);
+}
+
+.admin-forcecheckin__button[data-no-slip="true"]:disabled {
+    background: linear-gradient(135deg, #c9302c, #ac2925);
+}
+
+.admin-forcecheckin__button[data-no-slip="true"][data-loading="true"] {
+    background: linear-gradient(135deg, #c9302c, #ac2925);
+}
+
+/* เปลี่ยนไอคอนสำหรับการไม่มีสลิป */
+.admin-forcecheckin__button[data-no-slip="true"]::before {
+    content: '⚠️';
+}
+
+/* สถานะสำเร็จ (แสดงไอคอนเช็ค) */
+.admin-forcecheckin__button[data-success="true"] {
+    background: linear-gradient(135deg, #5cb85c, #449d44);
+    box-shadow: 0 4px 12px rgba(92, 184, 92, 0.4);
+    animation: successPulse 0.5s ease-out;
+}
+
+.admin-forcecheckin__button[data-success="true"]::after {
+    content: '✓';
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    animation: checkmark 0.5s ease-out;
+    z-index: 2;
+}
+
+/* เพิ่มเอฟเฟกต์ระลอกคลื่นเมื่อคลิก */
+.admin-forcecheckin__button .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    z-index: 3;
+}
+
+/* ปรับแต่งข้อความแจ้งเตือน */
+.admin-forcecheckin__message {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    max-width: 100%;
+    word-wrap: break-word;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ไอคอนสำหรับข้อความแจ้งเตือน - ใช้ span แทน */
+.admin-forcecheckin__message-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* ข้อความแจ้งเตือนสำเร็จ */
+.admin-forcecheckin__message[data-type="success"] {
+    background: var(--accent-badge-bg);
+    border-left: 3px solid var(--primary-green-end);
+    color: var(--text-main);
+    position: relative;
+}
+
+.admin-forcecheckin__message[data-type="success"] .admin-forcecheckin__message-icon {
+    background: var(--primary-green-end);
+}
+
+/* เพิ่มเอฟเฟกต์ wave สำหรับข้อความแจ้งเตือนสำเร็จ */
+.admin-forcecheckin__message[data-type="success"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-green-end), transparent);
+    animation: wave 2s linear infinite;
+}
+
+/* ข้อความแจ้งเตือนผิดพลาด */
+.admin-forcecheckin__message[data-type="error"] {
+    background: var(--error-bg);
+    border-left: 3px solid var(--error-border);
+    color: var(--error-text-main);
+    position: relative;
+}
+
+.admin-forcecheckin__message[data-type="error"] .admin-forcecheckin__message-icon {
+    background: var(--error-border);
+}
+
+/* เพิ่มเอฟเฟกต์ wave สำหรับข้อความแจ้งเตือนผิดพลาด */
+.admin-forcecheckin__message[data-type="error"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--error-border), transparent);
+    animation: wave 2s linear infinite;
+}
+
+/* Keyframes สำหรับการหมุนของ Spinner */
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* Keyframes สำหรับเอฟเฟกต์พัลส์ของพื้นหลัง Spinner */
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+}
+
+/* Keyframes สำหรับการแสดงตัวของข้อความแจ้งเตือน */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Keyframes สำหรับเอฟเฟกต์สำเร็จ */
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Keyframes สำหรับเอฟเฟกต์เช็คมาร์ค */
+@keyframes checkmark {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(15deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Keyframes สำหรับเอฟเฟกต์ wave */
+@keyframes wave {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* การปรับแต่งเพิ่มเติมสำหรับหน้าจอขนาดเล็ก */
+@media (max-width: 640px) {
+    .admin-forcecheckin__button {
+        width: 100%;
+        font-size: 14px;
+        padding: 12px 14px;
+    }
+    
+    .admin-forcecheckin__button:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.01);
+    }
+    
+    .admin-forcecheckin__button:active:not(:disabled) {
+        transform: translateY(0) scale(0.99);
+    }
+}
+
+/* เพิ่มเอฟเฟกต์สำหรับธีมมืด (ถ้ามี) */
+@media (prefers-color-scheme: dark) {
+    .admin-forcecheckin__button {
+        background: linear-gradient(135deg, #46b8da, #39a3c4);
+        box-shadow: 0 4px 12px rgba(70, 184, 218, 0.4);
+    }
+    
+    .admin-forcecheckin__button:hover:not(:disabled) {
+        box-shadow: 0 8px 25px rgba(70, 184, 218, 0.6);
+    }
+    
+    .admin-forcecheckin__button[data-loading="true"] {
+        background: linear-gradient(135deg, #39a3c4, #2e8ca8);
+    }
+    
+    .admin-forcecheckin__button[data-action="uncheckin"] {
+        background: linear-gradient(135deg, #ec971f, #d58512);
+        box-shadow: 0 4px 12px rgba(236, 151, 31, 0.4);
+    }
+    
+    .admin-forcecheckin__button[data-action="uncheckin"]:hover:not(:disabled) {
+        box-shadow: 0 8px 25px rgba(236, 151, 31, 0.6);
+    }
+    
+    .admin-forcecheckin__button[data-action="uncheckin"][data-loading="true"] {
+        background: linear-gradient(135deg, #d58512, #c9750f);
+    }
+    
+    .admin-forcecheckin__button[data-no-slip="true"] {
+        background: linear-gradient(135deg, #c9302c, #ac2925);
+        box-shadow: 0 4px 12px rgba(201, 48, 44, 0.4);
+    }
+    
+    .admin-forcecheckin__button[data-no-slip="true"]:hover:not(:disabled) {
+        box-shadow: 0 8px 25px rgba(201, 48, 44, 0.6);
+    }
+    
+    .admin-forcecheckin__button[data-no-slip="true"][data-loading="true"] {
+        background: linear-gradient(135deg, #ac2925, #a02622);
+    }
+    
+    .admin-forcecheckin__button[data-success="true"] {
+        background: linear-gradient(135deg, #449d44, #3d8b3d);
+        box-shadow: 0 4px 12px rgba(68, 157, 68, 0.4);
+    }
+}
+
+/* เพิ่มเอฟเฟกต์ glow พิเศษสำหรับปุ่ม */
+.admin-forcecheckin__button:hover:not(:disabled) {
+    box-shadow: var(--glow-primary);
+}
+
+.admin-forcecheckin__button[data-action="uncheckin"]:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(240, 173, 78, 0.4);
+}
+
+.admin-forcecheckin__button[data-no-slip="true"]:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(217, 83, 79, 0.4);
+}
+
+.admin-forcecheckin__button[data-success="true"] {
+    box-shadow: var(--glow-success);
+}
+
+/* เพิ่มเอฟเฟกต์พาร์ติเคิลเมื่อสำเร็จ */
+.admin-forcecheckin__button[data-success="true"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+    animation: particle-explosion 0.8s ease-out forwards;
+    z-index: 3;
+}
+
+@keyframes particle-explosion {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(20);
+        opacity: 0;
+    }
+}
+
+/* เพิ่มเอฟเฟกต์ loading bar สำหรับปุ่ม */
+.admin-forcecheckin__button[data-loading="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: rgba(255, 255, 255, 0.8);
+    animation: loading-bar 2s ease-in-out infinite;
+    z-index: 3;
+}
+
+@keyframes loading-bar {
+    0% {
+        width: 0;
+        left: 0;
+    }
+    50% {
+        width: 100%;
+        left: 0;
+    }
+    100% {
+        width: 0;
+        left: 100%;
+    }
+}
+
+/* -------------------------------------------------- Attendee Edit Page -------------------------------------------------- */
+.attendee-edit-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* -------------------------------------------------- Attendee Edit Header -------------------------------------------------- */
+.attendee-edit-header {
+    margin-bottom: 20px;
+}
+
+/* Breadcrumb */
+.attendee-edit-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--text-soft);
+    margin-bottom: 16px;
+}
+
+.attendee-edit-breadcrumb a {
+    color: var(--primary-blue-start);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.attendee-edit-breadcrumb a:hover {
+    color: var(--primary-blue-end);
+    text-decoration: underline;
+}
+
+.attendee-edit-breadcrumb__separator {
+    color: var(--border-strong);
+    font-weight: bold;
+}
+
+.attendee-edit-breadcrumb__current {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+/* Header Badge */
+.attendee-edit-header__badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-blue-start), var(--primary-blue-end));
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-soft);
+    letter-spacing: 0.05em;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Header Title & Subtitle */
+.attendee-edit-header__title {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.attendee-edit-header__subtitle {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* Status Indicator */
+.attendee-edit-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    background: var(--accent-badge-bg);
+    border: 1px solid var(--border-soft);
+    color: var(--text-main);
+    animation: pulse 2s infinite;
+}
+
+.attendee-edit-status::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary-blue-start);
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* -------------------------------------------------- User Info Card -------------------------------------------------- */
+.attendee-edit-userinfo {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-medium);
+    border: 2px solid var(--border-soft);
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    animation: slideInLeft 0.6s ease-out;
+}
+
+.attendee-edit-userinfo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(91, 192, 222, 0.1) 0%, rgba(91, 192, 222, 0) 70%);
+    transform: translate(50px, -50px);
+}
+
+.attendee-edit-userinfo__avatar {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--primary-blue-start), var(--primary-blue-end));
+    border-radius: 50%;
+    box-shadow: var(--shadow-medium);
+    position: relative;
+    z-index: 1;
+}
+
+.attendee-edit-userinfo__details {
+    flex-grow: 1;
+}
+
+.attendee-edit-userinfo__name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin: 0 0 8px 0;
+}
+
+.attendee-edit-userinfo__token {
+    font-size: 16px;
+    color: var(--text-soft);
+    margin: 0 0 4px 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.attendee-edit-userinfo__token span {
+    color: var(--primary-blue-start);
+    font-weight: 600;
+}
+
+.attendee-edit-userinfo__org {
+    font-size: 16px;
+    color: var(--text-soft);
+    margin: 0;
+}
+
+/* -------------------------------------------------- Edit Form (Reusing from admin-page.css) -------------------------------------------------- */
+/* Ensure the form fits well within the edit page layout */
+.attendee-edit-page .admin-form__section {
+    animation: slideInUp 0.6s ease-out;
+}
+
+/* -------------------------------------------------- Action Buttons -------------------------------------------------- */
+.attendee-edit-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.attendee-edit-action-btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-pill);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+/* Back Button */
+.attendee-edit-action-btn--back {
+    background: var(--accent-badge-bg);
+    color: var(--text-main);
+    border-color: var(--border-strong);
+}
+
+.attendee-edit-action-btn--back:hover {
+    background: var(--border-soft);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+/* View Page Button */
+.attendee-edit-action-btn--view {
+    background: linear-gradient(135deg, var(--primary-blue-start), var(--primary-blue-end));
+    color: #ffffff;
+    box-shadow: var(--shadow-medium);
+}
+
+.attendee-edit-action-btn--view:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-deep);
+    filter: brightness(1.05);
+}
+
+/* -------------------------------------------------- Help Section -------------------------------------------------- */
+.attendee-edit-help {
+    margin-top: 40px;
+    padding: 24px;
+    background: var(--accent-badge-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+}
+
+.attendee-edit-help__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.attendee-edit-help__title::before {
+    content: '💡';
+    font-size: 24px;
+}
+
+.attendee-edit-help__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.attendee-edit-help__list li {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+.attendee-edit-help__list li::before {
+    content: '✔';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    color: var(--primary-green-end);
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* -------------------------------------------------- Animations -------------------------------------------------- */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* -------------------------------------------------- Responsive Design -------------------------------------------------- */
+@media (max-width: 768px) {
+    .attendee-edit-page {
+        padding: 20px;
+    }
+
+    .attendee-edit-header__title {
+        font-size: 28px;
+    }
+
+    .attendee-edit-userinfo {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .attendee-edit-actions {
+        flex-direction: column;
+    }
+
+    .attendee-edit-action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ปุ่มยกเลิกสลิป (ใช้ร่วมกับ .admin-pill / .admin-pill--danger เดิมได้) */
+.admin-slip-clear-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #ffffff;
+  border: 2px solid rgba(192, 57, 43, 0.85);
+  box-shadow: var(--shadow-medium);
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.admin-slip-clear-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff5b4d, #e74c3c);
+  border-color: #e74c3c;
+  box-shadow: var(--shadow-deep);
+  transform: translateY(-1px);
+}
+
+.admin-slip-clear-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-medium);
+}
+
+.admin-slip-clear-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: var(--shadow-soft);
+}
+
+
+
+/* ========================================
+   Namecard (QR) Layout
+   ใช้กับหน้า /admin/namecards
+   ===================================== */
+
+/* wrapper หลักของโซนนามบัตร */
+.namecard-list {
+  margin-top: 24px;
+}
+
+/* กริดของบัตร */
+.namecard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 380px));
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* กล่องบัตรแต่ละใบ */
+.namecard-item {
+  background: #fdfaf4;
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* เส้นเน้นด้านบนของบัตร */
+.namecard-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #22c55e, #0ea5e9);
+}
+
+/* header บนบัตร (ชื่อ / หน่วยงาน / ตำแหน่ง / จังหวัด) */
+.namecard-item__header {
+  padding-top: 8px; /* เผื่อที่ให้แถบด้านบน */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.namecard-item__name {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #111827;
+}
+
+.namecard-item__org {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.namecard-item__job,
+.namecard-item__province {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ส่วนล่าง: QR + รายละเอียดเล็ก ๆ */
+.namecard-item__body {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* กล่องใส่รูป QR */
+.namecard-item__qr {
+  flex: 0 0 120px;
+  height: 120px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.namecard-item__qr img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+/* ข้อความรายละเอียดใต้ QR */
+.namecard-item__meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.namecard-item__meta code {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #e5f3ff;
+  color: #0369a1;
+}
+
+/* ทำให้บัตรอ่านง่ายสำหรับผู้ใหญ่ */
+.namecard-item__name,
+.namecard-item__org,
+.namecard-item__meta {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Noto Sans Thai', sans-serif;
+}
+
+/* จอเล็ก: ให้ QR ลงล่าง */
+@media (max-width: 640px) {
+  .namecard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .namecard-item__body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .namecard-item__qr {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* สำหรับตอนพิมพ์ / export เป็น PDF */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  .page-wrap {
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
+  .namecard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .namecard-item {
+    box-shadow: none;
+    border: 1px solid #d1d5db;
+    page-break-inside: avoid;
+  }
+}
+
+
+
+/* เพิ่มขนาดของ QR Code */
+.namecard-item__qr img {
+  width: 300px; /* ปรับขนาดให้ใหญ่ขึ้น */
+  height: 300px; /* ปรับขนาดให้ใหญ่ขึ้น */
+  margin-bottom: 16px; /* ให้มีระยะห่าง */
+}
+
+/* เพิ่มขนาดฟอนต์ของชื่อ */
+.namecard-item__name {
+  font-size: 24px; /* ขยายขนาดฟอนต์ */
+  font-weight: bold;
+}
+
+/* เพิ่มขนาดฟอนต์ของรายละเอียดต่าง ๆ */
+.namecard-item__org,
+.namecard-item__job,
+.namecard-item__province,
+.namecard-item__phone {
+  font-size: 16px; /* ขยายขนาดฟอนต์ */
+}
+
+/* ปรับขนาดฟอนต์ของประเภทอาหาร */
+.namecard-item__food-type {
+  font-size: 14px;
+  font-style: italic;
+}
