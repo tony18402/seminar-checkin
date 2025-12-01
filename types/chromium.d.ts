@@ -12,3 +12,8 @@ declare module 'puppeteer' {
   const p: any;
   export = p;
 }
+
+declare module 'chrome-aws-lambda' {
+  const chrome: any;
+  export = chrome;
+}

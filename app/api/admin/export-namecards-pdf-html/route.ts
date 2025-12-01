@@ -117,22 +117,67 @@ export async function GET(req: NextRequest) {
 
     const html = await renderHtml(attendees);
 
-    // Try to use a chromium binary packaged for serverless (works on Vercel).
-    // If that's not available, fall back to the regular `puppeteer` package (local dev).
-    let browser: any;
+    // Try several strategies to get a runnable Chromium on serverless hosts.
+    // 1) @sparticuz/chromium + puppeteer-core (works on Vercel when available)
+    // 2) chrome-aws-lambda + puppeteer-core (common serverless fallback)
+    // 3) puppeteer (local dev fallback)
+    let browser: any = null;
+    const launchErrors: Array<{ method: string; error: any }> = [];
+
+    // Strategy 1: @sparticuz/chromium
     try {
       const chromium = (await import('@sparticuz/chromium')) as any;
       const puppeteer = (await import('puppeteer-core')) as any;
+      const exe = await chromium.executablePath;
+      console.log('[pdf] sparticuz.executablePath=', exe);
       browser = await puppeteer.launch({
-        args: chromium.args,
+        args: chromium.args || [],
         defaultViewport: { width: 1200, height: 800 },
-        executablePath: await chromium.executablePath,
-        headless: chromium.headless,
+        executablePath: exe || undefined,
+        headless: chromium.headless ?? true,
       });
+      console.log('[pdf] Launched browser via @sparticuz/chromium');
     } catch (e) {
-      // Fallback for local development where @sparticuz/chromium is not installed
-      const puppeteer = (await import('puppeteer')) as any;
-      browser = await puppeteer.launch();
+      launchErrors.push({ method: '@sparticuz/chromium', error: e });
+      console.warn('[pdf] @sparticuz/chromium launch failed:', String(e));
+    }
+
+    // Strategy 2: chrome-aws-lambda
+    if (!browser) {
+      try {
+        const chromeAws = (await import('chrome-aws-lambda')) as any;
+        const puppeteer = (await import('puppeteer-core')) as any;
+        const exe = await chromeAws.executablePath;
+        console.log('[pdf] chrome-aws-lambda.executablePath=', exe);
+        browser = await puppeteer.launch({
+          args: chromeAws.args || [],
+          defaultViewport: { width: 1200, height: 800 },
+          executablePath: exe || undefined,
+          headless: chromeAws.headless ?? true,
+        });
+        console.log('[pdf] Launched browser via chrome-aws-lambda');
+      } catch (e) {
+        launchErrors.push({ method: 'chrome-aws-lambda', error: e });
+        console.warn('[pdf] chrome-aws-lambda launch failed:', String(e));
+      }
+    }
+
+    // Strategy 3: full puppeteer (development)
+    if (!browser) {
+      try {
+        const puppeteer = (await import('puppeteer')) as any;
+        console.log('[pdf] falling back to puppeteer (local dev)');
+        browser = await puppeteer.launch();
+        console.log('[pdf] Launched browser via puppeteer');
+      } catch (e) {
+        launchErrors.push({ method: 'puppeteer', error: e });
+        console.warn('[pdf] puppeteer launch failed:', String(e));
+      }
+    }
+
+    if (!browser) {
+      const details = launchErrors.map(le => `${le.method}: ${String(le.error)}`).join(' | ');
+      throw new Error(`Unable to launch Chromium. Attempts: ${details}`);
     }
     const page = await browser.newPage();
     // allow loading local fonts and external images
