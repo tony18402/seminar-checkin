@@ -179,7 +179,20 @@ export async function GET(req: NextRequest) {
       const details = launchErrors.map(le => `${le.method}: ${String(le.error)}`).join(' | ');
       console.error('[pdf] Unable to launch Chromium. Attempts:', details);
       // Fallback: return the rendered HTML so the user can open in browser and print to PDF manually.
-      return new NextResponse(html, {
+      const printUi = `
+        <div style="position:fixed;right:12px;top:12px;z-index:9999">
+          <button onclick="window.print()" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;">Print / Save as PDF</button>
+        </div>
+        <script>
+          try {
+            if (new URLSearchParams(location.search).get('print') === '1') {
+              setTimeout(()=>window.print(), 300);
+            }
+          } catch(e) { /* ignore */ }
+        </script>
+      `;
+      const finalHtml = html.replace('</body>', `${printUi}</body>`);
+      return new NextResponse(finalHtml, {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
