@@ -1,0 +1,41 @@
+[33mcommit e3b670b99d11bc09af9683af6c49a74c6bb1374f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: tony18402 <thiraphat.sueaintho@gmail.com>
+Date:   Mon Dec 1 12:03:33 2025 +0700
+
+    Initial Next.js app
+
+app/Dashboard/page.tsx
+app/admin/AdminDeleteButton.tsx
+app/admin/AdminImportButton.tsx
+app/admin/AdminNav.tsx
+app/admin/AdminSlipClearButton.tsx
+app/admin/AdminSlipUploadButton.tsx
+app/admin/AdminUncheckinButton.tsx
+app/admin/AttendeeEditForm.tsx
+app/admin/ForceCheckinButton.tsx
+app/admin/admin-page.css
+app/admin/attendee/[id]/page.tsx
+app/admin/namecards/page.tsx
+app/admin/page.tsx
+app/api/admin/clear-slip/route.ts
+app/api/admin/delete-attendee/route.ts
+app/api/admin/export-attendees/route.ts
+app/api/admin/export-namecards-pdf-html/route.ts
+app/api/admin/export-namecards-pdf/route.ts
+app/api/admin/force-checkin/route.ts
+app/api/admin/import/route.ts
+app/api/admin/uncheckin/route.ts
+app/api/admin/update-attendee/route.ts
+app/api/checkin/route.ts
+app/api/upload-slip/route.ts
+app/attendee/[ticket_token]/page.tsx
+app/globals.css
+dev.log
+lib/supabaseServer.ts
+public/fonts/NotoSansMono-Regular.ttf
+public/fonts/NotoSansThai-Bold.ttf
+public/fonts/NotoSansThai-Regular.ttf
+public/generated.pdf
+sample-namecards.pdf
+scripts/fetch-fonts.ps1
+touch .env.local
