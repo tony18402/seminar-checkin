@@ -140,50 +140,31 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Try several strategies to get a runnable Chromium on serverless hosts.
-    // 1) @sparticuz/chromium + puppeteer-core (works on Vercel when available)
-    // 2) chrome-aws-lambda + puppeteer-core (common serverless fallback)
-    // 3) puppeteer (local dev fallback)
-    let browser: any = null;
-    const launchErrors: Array<{ method: string; error: any }> = [];
-
-    // Strategy 1: @sparticuz/chromium
+    // Attempt server-side PDF rendering only when requested (pdf=1)
     try {
-      const chromium = (await import('@sparticuz/chromium')) as any;
-      const puppeteer = (await import('puppeteer-core')) as any;
-      const exe = await chromium.executablePath;
-      console.log('[pdf] sparticuz.executablePath=', exe);
-      browser = await puppeteer.launch({
-        args: chromium.args || [],
-        defaultViewport: { width: 1200, height: 800 },
-        executablePath: exe || undefined,
-        headless: chromium.headless ?? true,
+      const puppeteer = (await import('puppeteer')) as any;
+      const browser = await puppeteer.launch({ args: ['--no-sandbox','--disable-setuid-sandbox'] });
+      const page = await browser.newPage();
+      // allow loading local fonts and external images
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '8mm', right: '8mm' } });
+      await browser.close();
+
+      // convert Buffer -> ArrayBuffer
+      const arr = new Uint8Array(pdfBuffer as any);
+      const buffer = new ArrayBuffer(arr.length);
+      new Uint8Array(buffer).set(arr);
+
+      return new NextResponse(buffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'inline; filename="namecards-html.pdf"',
+        },
       });
-      console.log('[pdf] Launched browser via @sparticuz/chromium');
     } catch (e) {
-      launchErrors.push({ method: '@sparticuz/chromium', error: e });
-      console.warn('[pdf] @sparticuz/chromium launch failed:', String(e));
-    }
-
-    // (chrome-aws-lambda fallback removed to avoid peer-dep conflicts)
-
-    // Strategy 3: full puppeteer (development)
-    if (!browser) {
-      try {
-        const puppeteer = (await import('puppeteer')) as any;
-        console.log('[pdf] falling back to puppeteer (local dev)');
-        browser = await puppeteer.launch();
-        console.log('[pdf] Launched browser via puppeteer');
-      } catch (e) {
-        launchErrors.push({ method: 'puppeteer', error: e });
-        console.warn('[pdf] puppeteer launch failed:', String(e));
-      }
-    }
-
-    if (!browser) {
-      const details = launchErrors.map(le => `${le.method}: ${String(le.error)}`).join(' | ');
-      console.error('[pdf] Unable to launch Chromium. Attempts:', details);
-      // Fallback: return the rendered HTML so the user can open in browser and print to PDF manually.
+      console.error('[pdf] server-side puppeteer attempt failed:', String(e));
+      // If server-side rendering fails, fall back to printable HTML
       const printUi = `
         <div style="position:fixed;right:12px;top:12px;z-index:9999">
           <button onclick="window.print()" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;">Print / Save as PDF</button>
@@ -196,30 +177,14 @@ export async function GET(req: NextRequest) {
           } catch(e) { /* ignore */ }
         </script>
       `;
-      const finalHtml = html.replace('</body>', `${printUi}</body>`);
+      const finalHtml = html ? html.replace('</body>', `${printUi}</body>`) : `<!doctype html><html><head><meta charset="utf-8" /></head><body><div style="padding:24px">PDF rendering failed on server. Use the button to print/save as PDF.</div>${printUi}</body></html>`;
       return new NextResponse(finalHtml, {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
     }
-    const page = await browser.newPage();
-    // allow loading local fonts and external images
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '8mm', right: '8mm' } });
-    await browser.close();
 
-    // convert Buffer -> ArrayBuffer
-    const arr = new Uint8Array(pdfBuffer as any);
-    const buffer = new ArrayBuffer(arr.length);
-    new Uint8Array(buffer).set(arr);
-
-    return new NextResponse(buffer, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'inline; filename="namecards-html.pdf"',
-      },
-    });
+    
   } catch (err) {
     console.error('Error generating HTML->PDF:', err);
     const detail = err instanceof Error ? err.message : String(err);
