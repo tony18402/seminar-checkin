@@ -118,6 +118,28 @@ export async function GET(req: NextRequest) {
 
     html = await renderHtml(attendees);
 
+    // By default return the printable HTML (so Vercel callers can Print -> Save as PDF).
+    // To force server-side PDF rendering attempt, call with `?pdf=1`.
+    if ((searchParams.get('pdf') ?? '').trim() !== '1') {
+      const printUi = `
+        <div style="position:fixed;right:12px;top:12px;z-index:9999">
+          <button onclick="window.print()" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;">Print / Save as PDF</button>
+        </div>
+        <script>
+          try {
+            if (new URLSearchParams(location.search).get('print') === '1') {
+              setTimeout(()=>window.print(), 300);
+            }
+          } catch(e) { /* ignore */ }
+        </script>
+      `;
+      const finalHtml = html.replace('</body>', `${printUi}</body>`);
+      return new NextResponse(finalHtml, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }
+
     // Try several strategies to get a runnable Chromium on serverless hosts.
     // 1) @sparticuz/chromium + puppeteer-core (works on Vercel when available)
     // 2) chrome-aws-lambda + puppeteer-core (common serverless fallback)
