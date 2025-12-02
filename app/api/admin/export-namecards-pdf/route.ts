@@ -32,6 +32,50 @@ function buildQrUrl(ticketToken: string | null, qrImageUrl: string | null) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encoded}`;
 }
 
+// Launch Puppeteer with multiple fallbacks so we always have a Chromium binary
+async function launchHtmlBrowser() {
+  const envExecutable =
+    process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_EXECUTABLE_PATH || null;
+  const headlessEnv = (process.env.PUPPETEER_HEADLESS || '').trim().toLowerCase();
+  const normalizeHeadless: 'new' | boolean = headlessEnv === 'false' ? false : headlessEnv === 'legacy' ? true : 'new';
+  const baseArgs = process.env.PUPPETEER_ARGS
+    ? process.env.PUPPETEER_ARGS.split(/\s+/).filter(Boolean)
+    : ['--no-sandbox', '--disable-setuid-sandbox'];
+
+  const useEnvExecutable = async () => {
+    const puppeteerCore = (await import('puppeteer-core')) as any;
+    return puppeteerCore.launch({
+      executablePath: envExecutable,
+      headless: normalizeHeadless,
+      args: baseArgs,
+    });
+  };
+
+  if (envExecutable) {
+    try {
+      return await useEnvExecutable();
+    } catch (envErr) {
+      console.warn('Failed to launch Puppeteer with env executable, falling back:', envErr);
+    }
+  }
+
+  try {
+    const chromium = (await import('@sparticuz/chromium')) as any;
+    const puppeteerCore = (await import('puppeteer-core')) as any;
+    return await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport ?? { width: 1200, height: 800 },
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
+  } catch (serverlessErr) {
+    console.warn('Falling back to bundled Puppeteer Chrome binary:', serverlessErr);
+  }
+
+  const puppeteer = (await import('puppeteer')) as any;
+  return puppeteer.launch();
+}
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient();
@@ -185,24 +229,29 @@ export async function GET(req: NextRequest) {
 
       try {
         const html = await renderHtml(attendees as any[]);
-        const puppeteer = await import('puppeteer');
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-        const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '8mm', right: '8mm' } });
-        await browser.close();
+        let browser: any;
+        try {
+          browser = await launchHtmlBrowser();
+          const page = await browser.newPage();
+          await page.setContent(html, { waitUntil: 'networkidle0' });
+          const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '8mm', right: '8mm' } });
 
-        const arr = new Uint8Array(pdfBuffer as any);
-        const buffer = new ArrayBuffer(arr.length);
-        new Uint8Array(buffer).set(arr);
+          const arr = new Uint8Array(pdfBuffer as any);
+          const buffer = new ArrayBuffer(arr.length);
+          new Uint8Array(buffer).set(arr);
 
-        return new NextResponse(buffer, {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': 'inline; filename="namecards-html.pdf"',
-          },
-        });
+          return new NextResponse(buffer, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': 'inline; filename="namecards-html.pdf"',
+            },
+          });
+        } finally {
+          if (browser) {
+            await browser.close();
+          }
+        }
       } catch (htmlErr) {
         console.error('Error generating HTML->PDF (engine=html):', htmlErr);
         const detail = htmlErr instanceof Error ? htmlErr.message : String(htmlErr);
