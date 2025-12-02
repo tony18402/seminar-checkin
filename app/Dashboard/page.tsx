@@ -21,10 +21,15 @@ type AttendeeRow = {
 };
 
 // ---- ตั้งค่า Supabase ฝั่ง client ----
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+// Use fallback empty string to prevent build-time errors; client will check at runtime
+const supabaseUrl = typeof window !== 'undefined' 
+  ? (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '') 
+  : '';
+const supabaseAnonKey = typeof window !== 'undefined'
+  ? (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '')
+  : '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseAnonKey)) {
   console.warn(
     'กรุณาตรวจสอบ NEXT_PUBLIC_SUPABASE_URL และ NEXT_PUBLIC_SUPABASE_ANON_KEY ในไฟล์ .env.local'
   );
