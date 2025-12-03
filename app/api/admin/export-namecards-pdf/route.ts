@@ -278,7 +278,13 @@ export async function GET(request: NextRequest) {
   } catch (err: any) {
     console.error('Export PDF Error:', err);
     return NextResponse.json(
-      { error: 'เกิดข้อผิดพลาดในการสร้าง PDF', details: err.message },
+      { 
+        error: 'เกิดข้อผิดพลาดในการสร้าง PDF', 
+        details: err.message,
+        stack: err.stack,
+        name: err.name,
+        cause: err.cause
+      },
       { status: 500 }
     );
   }
