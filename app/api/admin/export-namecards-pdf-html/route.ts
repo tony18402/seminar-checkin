@@ -146,14 +146,28 @@ export async function GET(req: NextRequest) {
         const puppeteer = await import('puppeteer-core');
         
         console.log('Loading Chromium executable for Vercel...');
+        
+        // Get executable path for serverless
         const executablePath = await chromium.executablePath();
+        
         console.log('Chromium path:', executablePath);
         
         browser = await puppeteer.default.launch({
-          args: chromium.args,
+          args: [
+            ...chromium.args,
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--disable-setuid-sandbox',
+            '--no-first-run',
+            '--no-sandbox',
+            '--no-zygote',
+            '--single-process',
+            '--font-render-hinting=none',
+          ],
           defaultViewport: { width: 1200, height: 800 },
           executablePath,
-          headless: chromium.headless,
+          headless: true,
+          ignoreDefaultArgs: ['--disable-extensions'],
         });
         console.log('Browser launched successfully on Vercel');
       } catch (e) {
