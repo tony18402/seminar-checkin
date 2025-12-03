@@ -1,11 +1,11 @@
 // app/api/admin/export-namecards-pdf/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabaseServer';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // สำหรับ Vercel Pro
-export const runtime = 'nodejs';
 
 type AttendeeCardRow = {
   id: string;
@@ -237,14 +237,19 @@ export async function GET(request: NextRequest) {
     const html = generateNamecardsHTML(attendees);
 
     // ใช้ Puppeteer สร้าง PDF
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     const browser = await puppeteer.launch({
-      headless: true,
-      args: [
+      args: isProduction ? chromium.args : [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu',
       ],
+      executablePath: isProduction 
+        ? await chromium.executablePath()
+        : process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      headless: isProduction ? chromium.headless : true,
     });
 
     const page = await browser.newPage();
