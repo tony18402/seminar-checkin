@@ -353,13 +353,9 @@ export async function GET(req: NextRequest) {
         log('Error generating HTML->PDF (engine=html):', htmlErr && (htmlErr as Error).message, 'stack:', htmlErr instanceof Error ? htmlErr.stack : undefined);
         const detail = htmlErr instanceof Error ? htmlErr.message : String(htmlErr);
         
-        // Auto-fallback to pdf-lib when Puppeteer/Chrome is unavailable (e.g., Vercel serverless)
-        if (detail.includes('Could not find Chrome') || detail.includes('Failed to launch') || detail.includes('Chromium serverless initialization failed')) {
-          console.warn('[export-namecards-pdf] Chrome not available, falling back to pdf-lib engine (vector-based)...');
-          // Continue to pdf-lib rendering below instead of returning error
-        } else {
-          return NextResponse.json({ ok: false, message: 'เกิดข้อผิดพลาดในการสร้าง PDF (HTML engine)', detail }, { status: 500 });
-        }
+        // Auto-fallback to pdf-lib when Puppeteer/Chrome is unavailable (always fallback on any error)
+        console.warn('[export-namecards-pdf] HTML engine failed, falling back to pdf-lib engine (vector-based). Error:', detail);
+        // Continue to pdf-lib rendering below instead of returning error
       }
     }
 

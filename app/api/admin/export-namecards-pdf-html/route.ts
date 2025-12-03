@@ -13,10 +13,10 @@ const fontBaseUrl = process.env.VERCEL_URL
   : 'http://localhost:3000/fonts';
 
 Font.register({
-  family: 'NotoSansThai',
+  family: 'Sarabun',
   fonts: [
-    { src: `${fontBaseUrl}/NotoSansThai-Regular.ttf`, fontWeight: 400 },
-    { src: `${fontBaseUrl}/NotoSansThai-Bold.ttf`, fontWeight: 700 },
+    { src: `${fontBaseUrl}/Sarabun-Regular.ttf`, fontWeight: 400 },
+    { src: `${fontBaseUrl}/Sarabun-Bold.ttf`, fontWeight: 700 },
   ],
 });
 
@@ -28,7 +28,7 @@ Font.register({
 const styles = StyleSheet.create({
   page: {
     padding: 24,
-    fontFamily: 'NotoSansThai',
+    fontFamily: 'Sarabun',
     fontSize: 12,
   },
   title: {
