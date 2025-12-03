@@ -7,18 +7,22 @@ import path from 'path';
 
 export const runtime = 'nodejs';
 
-// Register fonts
+// Register fonts using absolute URLs that work on Vercel
+const fontBaseUrl = process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}/fonts`
+  : 'http://localhost:3000/fonts';
+
 Font.register({
   family: 'NotoSansThai',
   fonts: [
-    { src: path.join(process.cwd(), 'public', 'fonts', 'NotoSansThai-Regular.ttf'), fontWeight: 400 },
-    { src: path.join(process.cwd(), 'public', 'fonts', 'NotoSansThai-Bold.ttf'), fontWeight: 700 },
+    { src: `${fontBaseUrl}/NotoSansThai-Regular.ttf`, fontWeight: 400 },
+    { src: `${fontBaseUrl}/NotoSansThai-Bold.ttf`, fontWeight: 700 },
   ],
 });
 
 Font.register({
   family: 'NotoSansMono',
-  src: path.join(process.cwd(), 'public', 'fonts', 'NotoSansMono-Regular.ttf'),
+  src: `${fontBaseUrl}/NotoSansMono-Regular.ttf`,
 });
 
 const styles = StyleSheet.create({
