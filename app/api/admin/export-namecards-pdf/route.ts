@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabaseServer';
 import puppeteer from 'puppeteer-core';
-import chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // สำหรับ Vercel Pro
@@ -247,7 +247,7 @@ export async function GET(request: NextRequest) {
         '--disable-gpu',
       ],
       executablePath: isProduction 
-        ? await chromium.executablePath
+        ? await chromium.executablePath()
         : process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       headless: isProduction ? chromium.headless : true,
     });
@@ -256,7 +256,7 @@ export async function GET(request: NextRequest) {
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
     const pdfBuffer = await page.pdf({
-      format: 'a4',
+      format: 'A4',
       printBackground: true,
       margin: {
         top: '20px',
