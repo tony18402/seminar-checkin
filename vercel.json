@@ -4,5 +4,11 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "/$1" }
-  ]
+  ],
+  "functions": {
+    "app/api/admin/export-namecards-pdf-html/route.ts": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  }
 }
