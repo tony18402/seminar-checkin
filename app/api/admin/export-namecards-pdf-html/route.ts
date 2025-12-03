@@ -1,89 +1,11 @@
 // app/api/admin/export-namecards-pdf-html/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import React from 'react';
-import { renderToStream, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
-import { createServerClient } from '@/lib/supabaseServer';
 import path from 'path';
 import fs from 'fs';
+import { createServerClient } from '@/lib/supabaseServer';
 
 export const runtime = 'nodejs';
-
-// Register fonts using base64 data URIs for maximum reliability on Vercel
-function loadFontBase64(relativePath: string) {
-  const abs = path.join(process.cwd(), 'public', 'fonts', relativePath);
-  const bytes = fs.readFileSync(abs);
-  return Buffer.from(bytes).toString('base64');
-}
-
-const sarabunRegularB64 = loadFontBase64('Sarabun-Regular.ttf');
-const sarabunBoldB64 = loadFontBase64('Sarabun-Bold.ttf');
-const notoMonoB64 = loadFontBase64('NotoSansMono-Regular.ttf');
-
-Font.register({
-  family: 'Sarabun',
-  fonts: [
-    { src: `data:font/ttf;charset=utf-8;base64,${sarabunRegularB64}`, fontWeight: 400 },
-    { src: `data:font/ttf;charset=utf-8;base64,${sarabunBoldB64}`, fontWeight: 700 },
-  ],
-});
-
-Font.register({
-  family: 'NotoSansMono',
-  src: `data:font/ttf;charset=utf-8;base64,${notoMonoB64}`,
-});
-
-const styles = StyleSheet.create({
-  page: {
-    padding: 24,
-    fontFamily: 'Sarabun',
-    fontSize: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 700,
-    marginBottom: 8,
-  },
-  card: {
-    padding: 14,
-    marginBottom: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  meta: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: 700,
-    marginBottom: 4,
-  },
-  info: {
-    fontSize: 13,
-    color: '#222',
-    marginBottom: 2,
-    lineHeight: 1.2,
-  },
-  token: {
-    fontFamily: 'NotoSansMono',
-    fontSize: 11,
-    color: '#555',
-    marginTop: 4,
-  },
-  qr: {
-    width: 100,
-    height: 100,
-  },
-  qrContainer: {
-    width: 110,
-    alignItems: 'center',
-  },
-  noQr: {
-    fontSize: 12,
-    color: '#777',
-  },
-});
+// foodType labels removed per request
 
 function buildQrUrl(ticketToken: string | null, qrImageUrl: string | null) {
   if (qrImageUrl && qrImageUrl.trim().length > 0) return qrImageUrl;
@@ -92,49 +14,90 @@ function buildQrUrl(ticketToken: string | null, qrImageUrl: string | null) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encoded}`;
 }
 
-function NameCard({ attendee }: { attendee: any }) {
-  const qr = buildQrUrl(attendee.ticket_token, attendee.qr_image_url);
-  
-  // Clean up text fields
-  const safeName = (attendee.full_name ?? 'ไม่ระบุชื่อ').replace(/\u0000/g, '').trim() || 'ไม่ระบุชื่อ';
-  const safeOrg = (attendee.organization ?? 'ไม่ระบุหน่วยงาน').replace(/\u0000/g, '').trim() || 'ไม่ระบุหน่วยงาน';
-  const safeJob = (attendee.job_position ?? 'ไม่ระบุตำแหน่ง').replace(/\u0000/g, '').trim() || 'ไม่ระบุตำแหน่ง';
-  const safeProv = (attendee.province ?? 'ไม่ระบุจังหวัด').replace(/\u0000/g, '').trim() || 'ไม่ระบุจังหวัด';
-  const safePhone = (attendee.phone ?? 'ไม่ระบุ').replace(/\u0000/g, '').trim() || 'ไม่ระบุ';
-
-  return React.createElement(View, { style: styles.card },
-    React.createElement(View, { style: styles.meta },
-      React.createElement(Text, { style: styles.name }, safeName),
-      React.createElement(Text, { style: styles.info }, `หน่วยงาน: ${safeOrg}`),
-      React.createElement(Text, { style: styles.info }, `ตำแหน่ง: ${safeJob}`),
-      React.createElement(Text, { style: styles.info }, `จังหวัด: ${safeProv}`),
-      React.createElement(Text, { style: styles.info }, `โทรศัพท์: ${safePhone}`),
-      React.createElement(Text, { style: styles.token }, `Token: ${attendee.ticket_token ?? '-'}`)
-    ),
-    React.createElement(View, { style: styles.qrContainer },
-      qr ? React.createElement(Image, { src: qr, style: styles.qr }) : React.createElement(Text, { style: styles.noQr }, 'QR: ไม่มี')
-    )
-  );
+function loadFontBase64(p: string) {
+  try {
+    const file = fs.readFileSync(p);
+    return Buffer.from(file).toString('base64');
+  } catch {
+    return null;
+  }
 }
 
-function NameCardsDocument({ attendees }: { attendees: any[] }) {
+async function renderHtml(attendees: Array<any>) {
+  // Embed fonts directly to avoid headless Chromium missing Thai glyphs
+  const fontRegularPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansThai-Regular.ttf');
+  const fontBoldPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansThai-Bold.ttf');
+  const fontMonoPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansMono-Regular.ttf');
+  const reg64 = loadFontBase64(fontRegularPath);
+  const bold64 = loadFontBase64(fontBoldPath);
+  const mono64 = loadFontBase64(fontMonoPath);
+
+  const css = `
+    @font-face { font-family: 'NotoThai'; src: url(data:font/ttf;base64,${reg64}); font-weight: 400; }
+    @font-face { font-family: 'NotoThai'; src: url(data:font/ttf;base64,${bold64}); font-weight: 700; }
+    @font-face { font-family: 'MonoLocal'; src: url(data:font/ttf;base64,${mono64}); }
+    @page { size: A4; margin: 10mm 8mm; }
+    html, body { padding:0; margin:0; }
+    body { font-family: 'NotoThai', system-ui, sans-serif; color: #111; }
+    .page { width: 100%; height: calc(297mm - 20mm); padding: 16mm 16mm 16mm 16mm; box-sizing: border-box; page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    .title { font-weight:700; font-size:18px; margin-bottom:8px; }
+    .card { border:1px solid #222; padding:14px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+    .meta { flex: 1 1 auto; padding-right: 8px; }
+    .name { font-weight:700; font-size:18px; margin-bottom:4px; }
+    .info { font-size:13px; color:#222; margin:1px 0; line-height:1.2; }
+    .token { font-family: 'MonoLocal', monospace; font-size:11px; color:#555; margin-top:4px; }
+    .qr { width:100px; height:100px; object-fit:contain; }
+  `;
+
+  // chunk attendees into pages of 6
   const perPage = 6;
-  const pages: any[][] = [];
-  
-  for (let i = 0; i < attendees.length; i += perPage) {
-    pages.push(attendees.slice(i, i + perPage));
+  const all = attendees || [];
+  const pagesHtml: string[] = [];
+  for (let i = 0; i < all.length; i += perPage) {
+    const chunk = all.slice(i, i + perPage);
+    const rows = chunk
+      .map((a: any) => {
+      const qr = buildQrUrl(a.ticket_token, a.qr_image_url);
+      return `
+        <div class="card">
+          <div class="meta">
+            <div class="name">${a.full_name ?? 'ไม่ระบุชื่อ'}</div>
+            <div class="info">หน่วยงาน: ${a.organization ?? 'ไม่ระบุหน่วยงาน'}</div>
+            <div class="info">ตำแหน่ง: ${a.job_position ?? 'ไม่ระบุตำแหน่ง'}</div>
+            <div class="info">จังหวัด: ${a.province ?? 'ไม่ระบุจังหวัด'}</div>
+            <div class="info">โทรศัพท์: ${a.phone ?? 'ไม่ระบุ'}</div>
+            <div class="token">Token: ${a.ticket_token ?? '-'}</div>
+          </div>
+          <div style="width:110px;flex:0 0 110px;text-align:center">
+            ${qr ? `<img class="qr" src="${qr}" alt="QR"/>` : `<div style="font-size:12px;color:#777">QR: ไม่มี</div>`}
+          </div>
+        </div>
+      `;
+      })
+      .join('\n');
+
+    pagesHtml.push(`
+      <div class="page">
+        <div class="title">รายชื่อนามบัตรผู้เข้าร่วมงาน (QR Name Cards)</div>
+        ${rows}
+      </div>
+    `);
   }
 
-  return React.createElement(Document, null,
-    ...pages.map((pageAttendees, pageIndex) =>
-      React.createElement(Page, { key: pageIndex, size: 'A4', style: styles.page },
-        React.createElement(Text, { style: styles.title }, 'รายชื่อนามบัตรผู้เข้าร่วมงาน (QR Name Cards)'),
-        ...pageAttendees.map((att, idx) =>
-          React.createElement(NameCard, { key: att.id || idx, attendee: att })
-        )
-      )
-    )
-  );
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>${css}</style>
+      </head>
+      <body>
+        ${pagesHtml.join('\n')}
+      </body>
+    </html>
+  `;
 }
 
 export async function GET(req: NextRequest) {
@@ -154,6 +117,7 @@ export async function GET(req: NextRequest) {
 
     const attendees = data as any[];
 
+    // Optional dev/testing: append a synthetic attendee when ?injectName=... is provided
     if (injectName) {
       attendees.push({
         id: `inject-${Date.now()}`,
@@ -167,19 +131,70 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const doc = NameCardsDocument({ attendees });
-    const stream = await renderToStream(doc);
+    // No longer slice; render all pages.
 
-    return new NextResponse(stream as any, {
+    const html = await renderHtml(attendees);
+
+    // Try to use a chromium binary packaged for serverless (works on Vercel).
+    // If that's not available, fall back to the regular `puppeteer` package (local dev).
+    let browser: any;
+    
+    if (process.env.VERCEL) {
+      // On Vercel, always use @sparticuz/chromium
+      const chromium = (await import('@sparticuz/chromium')).default;
+      const puppeteer = (await import('puppeteer-core')).default;
+      
+      const executablePath = await chromium.executablePath();
+      
+      browser = await puppeteer.launch({
+        args: [
+          ...chromium.args,
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-setuid-sandbox',
+          '--no-first-run',
+          '--no-sandbox',
+          '--no-zygote',
+          '--single-process',
+        ],
+        defaultViewport: { width: 1200, height: 800 },
+        executablePath,
+        headless: true,
+      });
+    } else {
+      // Local development - use regular puppeteer
+      try {
+        const puppeteer = (await import('puppeteer')) as any;
+        browser = await puppeteer.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+      } catch (e) {
+        console.error('Failed to launch local puppeteer:', e);
+        throw new Error('Puppeteer initialization failed in local development');
+      }
+    }
+    const page = await browser.newPage();
+    // allow loading local fonts and external images
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '8mm', right: '8mm' } });
+    await browser.close();
+
+    // convert Buffer -> ArrayBuffer
+    const arr = new Uint8Array(pdfBuffer as any);
+    const buffer = new ArrayBuffer(arr.length);
+    new Uint8Array(buffer).set(arr);
+
+    return new NextResponse(buffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': 'inline; filename="namecards-react-pdf.pdf"',
+        'Content-Disposition': 'inline; filename="namecards-html.pdf"',
       },
     });
   } catch (err) {
-    console.error('Error generating PDF with @react-pdf/renderer:', err);
+    console.error('Error generating HTML->PDF:', err);
     const detail = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ ok: false, message: 'เกิดข้อผิดพลาดในการสร้าง PDF', detail }, { status: 500 });
+    return NextResponse.json({ ok: false, message: 'เกิดข้อผิดพลาดในการสร้าง PDF (HTML engine)', detail }, { status: 500 });
   }
 }
