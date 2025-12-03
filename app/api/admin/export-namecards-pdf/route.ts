@@ -355,9 +355,12 @@ export async function GET(req: NextRequest) {
           }
         }
       } catch (htmlErr) {
-        log('Error generating HTML->PDF (engine=html):', htmlErr && (htmlErr as Error).message, 'stack:', htmlErr instanceof Error ? htmlErr.stack : undefined);
-        const detail = htmlErr instanceof Error ? htmlErr.message : String(htmlErr);
-        
+        const anyErr: any = htmlErr as any;
+        const detail = anyErr && typeof anyErr === 'object' && 'message' in anyErr
+          ? String((anyErr as { message?: unknown }).message)
+          : (typeof anyErr === 'string' ? anyErr : (() => { try { return JSON.stringify(anyErr); } catch { return String(anyErr); } })());
+        const stack = anyErr && typeof anyErr === 'object' && 'stack' in anyErr ? String((anyErr as { stack?: unknown }).stack) : undefined;
+        log('Error generating HTML->PDF (engine=html):', detail, 'stack:', stack);
         // Auto-fallback to pdf-lib when Puppeteer/Chrome is unavailable (always fallback on any error)
         console.warn('[export-namecards-pdf] HTML engine failed, falling back to pdf-lib engine (vector-based). Error:', detail);
         // Continue to pdf-lib rendering below instead of returning error
@@ -706,3 +709,9 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+// npm i -g vercel
+// vercel login
+// vercel link
+// vercel env pull .env.local
+// vercel --prod
