@@ -142,9 +142,9 @@ export async function GET(req: NextRequest) {
     let browser: any;
     
     if (process.env.VERCEL) {
-      // On Vercel, always use @sparticuz/chromium
+      // On Vercel, always use @sparticuz/chromium-min (includes all dependencies)
       try {
-        const chromium = await import('@sparticuz/chromium');
+        const chromium = await import('@sparticuz/chromium-min');
         const puppeteer = await import('puppeteer-core');
         
         console.log('Loading Chromium executable for Vercel...');
