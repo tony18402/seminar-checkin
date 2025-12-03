@@ -248,7 +248,7 @@ export async function GET(req: NextRequest) {
           .page { width: 210mm; min-height: 297mm; padding: 24mm; box-sizing: border-box; page-break-after: always; }
           .page:last-child { page-break-after: auto; }
           .title { font-weight:700; font-size:18px; margin-bottom:8px; }
-          .card { border:1px solid #ddd; padding:16px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+          .card { padding:16px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
           .meta { flex: 1 1 auto; padding-right: 8px; }
           .name { font-weight:700; font-size:18px; margin-bottom:4px; }
           .info { font-size:13px; color:#222; margin:1px 0; line-height:1.15; }
@@ -563,8 +563,6 @@ export async function GET(req: NextRequest) {
         width: pageWidth - marginX * 2,
         height: cardHeight,
         color: rgb(1, 1, 1),
-        borderWidth: 1,
-        borderColor: rgb(0.8, 0.8, 0.8),
       });
 
       // simple crop marks for cutting
