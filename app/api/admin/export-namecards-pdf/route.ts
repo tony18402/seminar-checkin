@@ -244,7 +244,13 @@ export async function GET(request: NextRequest) {
     if (isProduction) {
       // สำหรับ Vercel/Production ใช้ chromium
       browser = await puppeteer.launch({
-        args: chromium.args,
+        args: [
+          ...chromium.args,
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+        ],
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
       });
