@@ -89,35 +89,35 @@ async function launchHtmlBrowser() {
   }
 
   try {
-    const chromium = (await import('@sparticuz/chromium')) as any;
+    const chromium = (await import('@sparticuz/chromium-min')) as any;
     const puppeteerCore = (await import('puppeteer-core')) as any;
 
-    // try to read executablePath returned by sparticuz/chromium for debugging
+    // try to read executablePath returned by sparticuz/chromium-min for debugging
     let sparticuzExec: string | null = null;
     try {
-      sparticuzExec = await chromium.executablePath;
-      log('@sparticuz/chromium provided executablePath:', sparticuzExec);
+      sparticuzExec = await chromium.executablePath();
+      log('@sparticuz/chromium-min provided executablePath:', sparticuzExec);
       if (sparticuzExec) {
         try {
           await fs.access(sparticuzExec);
-          log('sparticuz executable exists and is readable:', sparticuzExec);
+          log('chromium-min executable exists and is readable:', sparticuzExec);
         } catch (err) {
-          log('sparticuz executable not accessible:', sparticuzExec, err && (err as Error).message);
+          log('chromium-min executable not accessible:', sparticuzExec, err && (err as Error).message);
         }
       }
     } catch (execErr) {
-      log('Could not read sparticuz.executablePath:', execErr && (execErr as Error).message);
+      log('Could not read chromium-min.executablePath:', execErr && (execErr as Error).message);
     }
 
-    log('Attempting puppeteer-core.launch with @sparticuz/chromium', {
+    log('Attempting puppeteer-core.launch with @sparticuz/chromium-min', {
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport ?? { width: 1200, height: 800 },
+      defaultViewport: { width: 1200, height: 800 },
       headless: chromium.headless,
     });
 
     const browser = await puppeteerCore.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport ?? { width: 1200, height: 800 },
+      defaultViewport: { width: 1200, height: 800 },
       executablePath: sparticuzExec ?? (await chromium.executablePath).catch?.(() => undefined),
       headless: chromium.headless,
     });
