@@ -53,10 +53,22 @@ async function generateNameCardsPDF(
   // ลงทะเบียน fontkit สำหรับใช้ฟอนต์ custom
   pdfDoc.registerFontkit(fontkit);
   
-  // โหลดฟอนต์ภาษาไทย (Sarabun) จาก Google Fonts
-  const fontUrl = 'https://fonts.gstatic.com/s/sarabun/v13/DtVjJx26TKEr37c9YHZJmnYI5gnOpg.ttf';
-  const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-  const thaiFont = await pdfDoc.embedFont(fontBytes);
+  // โหลดฟอนต์ภาษาไทย (Sarabun Regular) - ใช้ URL ที่รองรับ CORS
+  const fontUrl = 'https://github.com/cadsondemak/Sarabun/raw/master/fonts/ttf/Sarabun-Regular.ttf';
+  let thaiFont;
+  
+  try {
+    const fontResponse = await fetch(fontUrl);
+    if (!fontResponse.ok) {
+      throw new Error(`Failed to fetch font: ${fontResponse.status}`);
+    }
+    const fontBytes = await fontResponse.arrayBuffer();
+    thaiFont = await pdfDoc.embedFont(fontBytes);
+  } catch (fontError) {
+    console.error('[Font Error]:', fontError);
+    // ถ้าโหลดฟอนต์ไม่สำเร็จ ใช้ Helvetica ซึ่งรองรับ Latin เท่านั้น
+    thaiFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  }
   
   // ขนาด A4
   const pageWidth = 210; // mm
