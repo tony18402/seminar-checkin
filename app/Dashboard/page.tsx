@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import './Dashboard.css';
 
 export const dynamic = 'force-dynamic';
 

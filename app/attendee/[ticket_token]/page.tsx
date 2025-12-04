@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import type { ChangeEvent } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-// ✅ นำเข้าไฟล์ CSS ทั่วไป
-import '@/app/globals.css'; // หรือ '@/styles/globals.css' ขึ้นอยู่กับตำแหน่งไฟล์
+import './attendee.css';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -26,16 +25,6 @@ type FoodType =
   | 'halal'
   | 'seafood_allergy'
   | 'other';
-
-const FOOD_OPTIONS: { value: FoodType; label: string }[] = [
-  { value: 'normal', label: 'อาหารทั่วไป' },
-  { value: 'no_pork', label: 'ไม่ทานหมู' },
-  { value: 'vegetarian', label: 'มังสวิรัติ' },
-  { value: 'vegan', label: 'เจ / วีแกน' },
-  { value: 'halal', label: 'ฮาลาล' },
-  { value: 'seafood_allergy', label: 'แพ้อาหารทะเล' },
-  { value: 'other', label: 'อื่น ๆ' },
-];
 
 type Attendee = {
   id: string;
@@ -63,6 +52,7 @@ function getAvatarInitial(name: string | null): string {
 
 export default function Page() {
   const params = useParams<{ ticket_token?: string }>();
+  const router = useRouter();
   const ticketToken =
     typeof params?.ticket_token === 'string'
       ? params.ticket_token.trim()
@@ -73,26 +63,13 @@ export default function Page() {
   const [isLoadingInitial, setIsLoadingInitial] = useState<boolean>(true);
 
   const [checkedInAt, setCheckedInAt] = useState<string | null>(null);
-  const [slipUrl, setSlipUrl] = useState<string | null>(null);
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedFileName, setSelectedFileName] =
-    useState<string>('ยังไม่ได้เลือกไฟล์');
-
-  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-
   const [checkinMessage, setCheckinMessage] = useState<string | null>(null);
   const [checkinError, setCheckinError] = useState<string | null>(null);
 
-  const [isUploading, setIsUploading] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isPending] = useTransition();
 
-  const [foodType, setFoodType] = useState<FoodType>('normal');
-
-  const hasSlip = !!slipUrl;
-  const isBusy = isUploading || isCheckingIn || isPending;
+  const isBusy = isCheckingIn || isPending;
 
   useEffect(() => {
     if (!ticketToken) {
@@ -150,9 +127,7 @@ export default function Page() {
           const typed = data as Attendee;
 
           setAttendee(typed);
-          setSlipUrl(typed.slip_url ?? null);
           setCheckedInAt(typed.checked_in_at ?? null);
-          setFoodType((typed.food_type as FoodType) || 'normal');
         }
       } catch (err) {
         console.error('load attendee unexpected error', err);
@@ -174,101 +149,19 @@ export default function Page() {
   }, [ticketToken]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setUploadMessage(null);
-    setUploadError(null);
-
-    if (!file) {
-      setSelectedFile(null);
-      setSelectedFileName('ยังไม่ได้เลือกไฟล์');
-      return;
-    }
-
-    const allowedTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/heic',
-      'image/heif',
-      'application/pdf',
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError('กรุณาเลือกไฟล์รูปภาพหรือ PDF เท่านั้น');
-      setSelectedFile(null);
-      setSelectedFileName('ยังไม่ได้เลือกไฟล์');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('ไฟล์มีขนาดใหญ่เกิน 5MB กรุณาเลือกไฟล์ที่เล็กกว่านี้');
-      setSelectedFile(null);
-      setSelectedFileName('ยังไม่ได้เลือกไฟล์');
-      return;
-    }
-
-    setSelectedFile(file);
-    setSelectedFileName(file.name);
+    // no-op: slip upload is no longer supported on this page
   };
 
   const handleClearSelectedFile = () => {
-    setSelectedFile(null);
-    setSelectedFileName('ยังไม่ได้เลือกไฟล์');
-    setUploadMessage(null);
-    setUploadError(null);
+    // no-op: slip upload is no longer supported on this page
   };
 
   const handleFoodTypeChange = (value: FoodType) => {
-    setFoodType(value);
+    // no-op: food type is read-only on this page now
   };
 
   const handleUploadSlip = async () => {
-    setUploadMessage(null);
-    setUploadError(null);
-
-    if (!attendee) {
-      setUploadError('ไม่พบข้อมูลผู้เข้าร่วม กรุณารีเฟรชหน้าอีกครั้ง');
-      return;
-    }
-
-    if (!selectedFile) {
-      setUploadError('กรุณาเลือกไฟล์สลิปก่อนกดอัปโหลด');
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-
-      const formData = new FormData();
-      formData.append('attendeeId', attendee.id);
-      formData.append('file', selectedFile);
-
-      const res = await fetch('/api/upload-slip', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data.success) {
-        setUploadError(
-          data.message ||
-            'อัปโหลดไฟล์สลิปไม่สำเร็จ กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่'
-        );
-        return;
-      }
-
-      setSlipUrl(data.slip_url || null);
-      setUploadMessage(data.message || 'อัปโหลดสลิปเรียบร้อยแล้ว');
-      setSelectedFile(null);
-      setSelectedFileName('ยังไม่ได้เลือกไฟล์');
-    } catch (err) {
-      console.error('upload slip error', err);
-      setUploadError(
-        'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ตหรือรีเฟรชหน้าแล้วลองใหม่อีกครั้ง'
-      );
-    } finally {
-      setIsUploading(false);
-    }
+    // no-op: slip upload is handled by staff / other flow now
   };
 
   const handleCheckin = async () => {
@@ -277,11 +170,6 @@ export default function Page() {
 
     if (!attendee) {
       setCheckinError('ไม่พบข้อมูลผู้เข้าร่วม กรุณารีเฟรชหน้าอีกครั้ง');
-      return;
-    }
-
-    if (!slipUrl) {
-      setCheckinError('กรุณาอัปโหลดสลิปก่อนเช็กอินเข้าร่วมงาน');
       return;
     }
 
@@ -298,7 +186,7 @@ export default function Page() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ticket_token: ticketToken, food_type: foodType }),
+        body: JSON.stringify({ ticket_token: ticketToken }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -322,6 +210,9 @@ export default function Page() {
 
       setCheckedInAt(data.checked_in_at || new Date().toISOString());
       setCheckinMessage(data.message || 'เช็กอินสำเร็จแล้ว');
+
+      // เมื่อเช็กอินสำเร็จ เปลี่ยนไปหน้าแสดงข้อความต้อนรับ
+      router.push(`/attendee/${encodeURIComponent(ticketToken)}/welcome`);
     } catch (err: any) {
       console.error('checkin error', err);
       setCheckinError(
@@ -432,105 +323,15 @@ export default function Page() {
             </p>
           )}
 
-          {/* บล็อกเลือกประเภทอาหาร */}
-          <div className="form-section">
-            <h3>เลือกประเภทอาหาร</h3>
-            <p className="form-description">
-              โปรดเลือกให้ตรงกับความต้องการ เพื่อให้ทีมงานเตรียมอาหารได้เหมาะสม
-            </p>
-
-            <div className="food-options-grid">
-              {FOOD_OPTIONS.map((opt) => {
-                const active = foodType === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    className={`food-option-btn ${active ? 'active' : ''}`}
-                    onClick={() => handleFoodTypeChange(opt.value)}
-                    disabled={isCheckedIn || isBusy}
-                  >
-                    <span>{opt.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {/* ประเภทอาหารไม่แสดงในหน้านี้แล้ว ตาม requirement ใหม่ */}
         </section>
 
-        {/* บล็อกอัปโหลด + เช็กอิน */}
+        {/* บล็อกเช็กอินอย่างเดียว */}
         <section className="form-section">
-          {/* ขั้นตอนที่ 1: อัปโหลดสลิป */}
           <div>
-            <h3>ขั้นตอนที่ 1: อัปโหลดสลิป</h3>
+            <h3>เช็กอินเข้าร่วมงาน</h3>
             <p className="form-description">
-              เลือกไฟล์สลิปจากมือถือ แล้วกดปุ่ม "อัปโหลดสลิป"
-            </p>
-
-            <div className="file-upload-wrapper">
-              {!hasSlip ? (
-                <>
-                  <label>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleFileChange}
-                      disabled={isUploading}
-                    />
-                    <span>เลือกไฟล์สลิป</span>
-                  </label>
-
-                  <p>
-                    ไฟล์ที่เลือก: <strong>{selectedFileName}</strong>
-                  </p>
-
-                  {selectedFile && (
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={handleClearSelectedFile}
-                      disabled={isUploading}
-                    >
-                      ล้างไฟล์ที่เลือก
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleUploadSlip}
-                    disabled={isUploading || !selectedFile}
-                  >
-                    {isUploading ? 'กำลังอัปโหลด…' : 'อัปโหลดสลิป'}
-                  </button>
-                </>
-              ) : (
-                <p>
-                  ✅ มีสลิปแนบในระบบแล้ว{' '}
-                  <a
-                    href={slipUrl as string}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    คลิกเพื่อเปิดดูสลิป
-                  </a>
-                  <br />
-                  (หากต้องการเปลี่ยนสลิป กรุณาติดต่อเจ้าหน้าที่หน้างาน)
-                </p>
-              )}
-
-              {uploadMessage && (
-                <p className="message success">{uploadMessage}</p>
-              )}
-              {uploadError && <p className="message error">{uploadError}</p>}
-            </div>
-          </div>
-
-          {/* ขั้นตอนที่ 2: เช็กอิน */}
-          <div>
-            <h3>ขั้นตอนที่ 2: เช็กอินเข้าร่วมงาน</h3>
-            <p className="form-description">
-              เมื่ออัปโหลดสลิปแล้ว ให้กดปุ่มด้านล่างเพื่อเช็กอิน
+              แสดงสถานะการเช็กอินของท่าน หากต้องการให้เจ้าหน้าที่ช่วยเช็กอิน โปรดแสดงหน้าจอนี้
             </p>
 
             <button
@@ -539,7 +340,7 @@ export default function Page() {
                 isCheckedIn ? 'btn-secondary' : 'btn-success'
               }`}
               onClick={handleCheckin}
-              disabled={isBusy || !hasSlip || isCheckedIn}
+              disabled={isBusy || isCheckedIn}
             >
               {isCheckingIn
                 ? 'กำลังเช็กอิน…'
@@ -552,6 +353,23 @@ export default function Page() {
               <p className="message success">{checkinMessage}</p>
             )}
             {checkinError && <p className="message error">{checkinError}</p>}
+          </div>
+        </section>
+
+        {/* คำแนะนำการใช้งานสำหรับผู้สูงอายุ */}
+        <section className="form-section">
+          <div>
+            <h3>คำแนะนำการใช้งานแบบง่าย ๆ</h3>
+            <p className="form-description">
+              ถ้าใช้งานไม่ถนัด สามารถยื่นโทรศัพท์ให้เจ้าหน้าที่ช่วยกดแทนได้
+            </p>
+            <ul className="attendee-help-list">
+              <li>1) เปิดหน้านี้จากลิงก์ในไลน์ หรือ QR ที่ได้รับ</li>
+              <li>2) ตรวจสอบว่าชื่อและหน่วยงานถูกต้อง</li>
+              <li>3) ถ้ายังไม่เช็กอิน ให้บอกเจ้าหน้าที่ว่าต้องการเช็กอิน</li>
+              <li>4) ยื่นโทรศัพท์ให้เจ้าหน้าที่ช่วยกดปุ่มเช็กอินให้</li>
+              <li>5) ถ้ามีปัญหาใด ๆ ให้บอกเจ้าหน้าที่ใกล้ตัวได้เลย</li>
+            </ul>
           </div>
         </section>
       </div>

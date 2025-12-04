@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     food_type?: string | null;
     hotel_name?: string | null;
     checked_in_at?: string | null; // ISO timestamp expected, or null
-    origin_host?: string | null;
   } | null;
 
   if (!body?.id) {
@@ -46,7 +45,6 @@ export async function POST(req: NextRequest) {
     'food_type',
     'hotel_name',
     'checked_in_at',
-    'origin_host',
   ];
   for (const key of allowed) {
     if (Object.prototype.hasOwnProperty.call(body, key)) {

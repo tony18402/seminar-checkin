@@ -1,33 +1,27 @@
-// lib/supabaseServer.ts
-import { createClient } from '@supabase/supabase-js';
+import { cookies } from "next/headers";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export function createServerClient() {
+let singletonClient: SupabaseClient | null = null;
+
+export function createServerClient(): SupabaseClient {
+  if (singletonClient) return singletonClient;
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl) {
-    console.warn(
-      'NEXT_PUBLIC_SUPABASE_URL is not set. Set NEXT_PUBLIC_SUPABASE_URL in your environment (for example in .env.local during local development, or as an Environment Variable in Vercel).'
-    );
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Supabase environment variables are not set");
   }
 
-  const supabaseKey = serviceRoleKey || anonKey;
+  // ถ้าอยากใช้ cookies ในอนาคตยังเรียก cookies() ได้จากตรงนี้
+  const cookieStore = cookies();
+  void cookieStore; // ป้องกัน unused variable warning
 
-  if (!supabaseKey) {
-    console.warn(
-      'SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY is not set. Set one of these in your environment (for example in .env.local during local development, or as an Environment Variable in Vercel).'
-    );
-  }
-
-  // If env vars are missing, return a client anyway (with empty strings) so
-  // the application does not crash during server-side module initialization.
-  // Individual calls will fail gracefully and route handlers already check
-  // for `error` from Supabase queries.
-  const urlForClient = supabaseUrl || '';
-  const keyForClient = supabaseKey || '';
-
-  return createClient(urlForClient, keyForClient, {
-    auth: { persistSession: false },
+  singletonClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      persistSession: false, // เหมาะกับ server-side
+    },
   });
+
+  return singletonClient;
 }

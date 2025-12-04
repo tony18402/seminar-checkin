@@ -93,10 +93,6 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = createServerClient();
 
-    // ✅ ดึง host ของ request (ลองใช้ x-forwarded-host ก่อน แล้วค่อย host)
-    const originHost =
-      req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? null;
-
     // 1) รับไฟล์จาก FormData
     const formData = await req.formData();
     const file = formData.get('file');
@@ -287,7 +283,7 @@ export async function POST(req: NextRequest) {
 
     const eventId = events[0].id as string;
 
-    // 6) upsert ลง attendees ตาม schema ใหม่ + origin_host
+    // 6) upsert ลง attendees ตาม schema ใหม่ (ไม่มี origin_host แล้ว)
     const { data: inserted, error: insertError } = await supabase
       .from('attendees')
       .upsert(
@@ -301,7 +297,6 @@ export async function POST(req: NextRequest) {
           qr_image_url: row.qr_image_url,
           food_type: row.food_type,
           ticket_token: row.ticket_token,
-          origin_host: originHost, // ✅ เก็บ host ไว้ในแต่ละแถว
         })),
         { onConflict: 'ticket_token' }
       )

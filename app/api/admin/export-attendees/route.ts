@@ -22,7 +22,6 @@ type DbAttendee = {
   qr_image_url: string | null;
   ticket_token: string | null;
   created_at: string | null;
-  origin_host: string | null;
 };
 
 // เดานามสกุลรูปจาก URL
@@ -89,8 +88,7 @@ export async function GET() {
       slip_url,
       qr_image_url,
       ticket_token,
-      created_at,
-      origin_host
+      created_at
     `
     )
     .order('full_name', { ascending: true });
@@ -124,7 +122,6 @@ export async function GET() {
     { header: 'QR (รูป)', key: 'qr', width: 20 },
     { header: 'Token', key: 'ticket_token', width: 26 },
     { header: 'วันที่เพิ่มข้อมูล', key: 'created_at', width: 22 },
-    { header: 'Origin Host', key: 'origin_host', width: 26 },
   ];
 
   const headerRow = sheet.getRow(1);
@@ -148,7 +145,6 @@ export async function GET() {
       qr: '',
       ticket_token: a.ticket_token ?? '',
       created_at: a.created_at ?? '',
-      origin_host: a.origin_host ?? '',
     });
 
     const excelRow = row.number;
@@ -207,7 +203,7 @@ export async function GET() {
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition':
-        'attachment; filename="attendees-with-slip-qr-origin.xlsx"',
+        'attachment; filename="attendees-with-slip-qr.xlsx"',
     },
   });
 }

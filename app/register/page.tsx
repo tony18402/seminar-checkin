@@ -1,6 +1,6 @@
 // app/register/page.tsx
 'use client';
-
+import './register.css';
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 
 type FoodType =
@@ -214,7 +214,14 @@ export default function RegisterPage() {
   }
 
   function handleOrganizationChange(e: ChangeEvent<HTMLSelectElement>) {
-    setOrganization(e.target.value);
+    const org = e.target.value;
+    setOrganization(org);
+
+    // ดึงชื่อจังหวัดจากข้อความหลังคำว่า "จังหวัด" ถ้ามี
+    const provinceMatch = org.split('จังหวัด')[1]?.trim();
+    if (provinceMatch) {
+      setProvince(provinceMatch);
+    }
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -272,10 +279,19 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        const errorMsg = data?.message || 'ไม่สามารถบันทึกข้อมูลได้';
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch {
+          // response body is empty or not JSON; keep data as null
+        }
+
+        const errorMsg =
+          (data && typeof data === 'object' && 'message' in data && data.message) ||
+          'ไม่สามารถบันทึกข้อมูลได้';
+
         console.error('API Error:', { status: res.status, data });
-        throw new Error(errorMsg);
+        throw new Error(String(errorMsg));
       }
 
       const result = await res.json();
@@ -359,8 +375,8 @@ export default function RegisterPage() {
               id="province"
               type="text"
               value={province}
-              onChange={(e) => setProvince(e.target.value)}
               required
+              readOnly
             />
           </div>
         </section>

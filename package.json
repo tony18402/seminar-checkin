@@ -20,6 +20,7 @@
     "jspdf": "^3.0.4",
     "next": "^16.0.7",
     "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.17.2",
     "puppeteer-core": "^23.6.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
@@ -28,6 +29,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
+    "@types/pdfkit": "^0.17.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

@@ -1,0 +1,115 @@
+/* สไตล์เฉพาะหน้า Register (โทนเดียวกับ admin/attendee) */
+
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 14px 24px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f5f5f0 0%, #e8e4d9 50%, #ddd4c0 100%);
+  color: #3b2f2f;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.register-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.register-header p {
+  font-size: 1rem;
+  color: #6b5d54;
+}
+
+.register-card {
+  margin: 0;
+  width: 100%;
+  border-radius: 20px;
+  padding: 18px 16px 16px;
+  background: #ffffff;
+  border: 1px solid rgba(139, 92, 56, 0.3);
+  box-shadow: 0 8px 24px rgba(139, 92, 56, 0.15);
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.register-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3b2f2f;
+}
+
+.register-input,
+.register-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 56, 0.35);
+  font-size: 1rem;
+  background: #fff;
+}
+
+.register-input:focus,
+.register-select:focus {
+  outline: none;
+  border-color: #5cb85c;
+  box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.25);
+}
+
+.register-help {
+  font-size: 0.9rem;
+  color: #6b5d54;
+}
+
+.register-error {
+  font-size: 0.9rem;
+  color: #8a6d3b;
+}
+
+.register-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.register-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #5cb85c, #449d44);
+  color: #ffffff;
+}
+
+.register-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.register-note {
+  font-size: 0.9rem;
+  color: #6b5d54;
+  text-align: center;
+}
+
+/* ให้ใช้เต็มจอทั้งกว้างและสูง ไม่บีบการ์ด */

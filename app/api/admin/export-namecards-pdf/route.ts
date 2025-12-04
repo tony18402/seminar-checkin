@@ -1,225 +1,235 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { jsPDF } from 'jspdf';
-import { createServerClient } from '@/lib/supabaseServer';
+// app/api/admin/export-namecards-pdf/route.ts
 
-type AttendeeCardRow = {
-  id: string;
-  event_id: string | null;
+import { NextResponse } from 'next/server';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
+import { createServerClient } from '@/lib/supabaseServer';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+type AttendeeRow = {
   full_name: string | null;
-  phone: string | null;
   organization: string | null;
   job_position: string | null;
-  province: string | null;
-  region: number | null;
-  qr_image_url: string | null;
   ticket_token: string | null;
-  food_type: string | null;
-  hotel_name: string | null;
+  qr_image_url: string | null; // ✅ เพิ่มฟิลด์ QR
 };
 
-// แปลง code ประเภทอาหารเป็น label ภาษาไทย
-function formatFoodType(foodType: string | null): string {
-  switch (foodType) {
-    case 'normal':
-      return 'ทั่วไป';
-    case 'no_pork':
-      return 'ไม่ทานหมู';
-    case 'vegetarian':
-      return 'มังสวิรัติ';
-    case 'vegan':
-      return 'เจ / วีแกน';
-    case 'halal':
-      return 'ฮาลาล';
-    case 'seafood_allergy':
-      return 'แพ้อาหารทะเล';
-    case 'other':
-      return 'อื่น ๆ';
-    default:
-      return 'ไม่ระบุ';
-  }
-}
-
-// ถ้าใน DB ยังไม่มี qr_image_url ให้ fallback เป็นลิงก์ QR จาก ticket_token
-function buildQrUrl(ticketToken: string | null, qrImageUrl: string | null) {
-  if (qrImageUrl && qrImageUrl.trim().length > 0) {
-    return qrImageUrl;
-  }
-  if (!ticketToken) return null;
-  const encoded = encodeURIComponent(ticketToken);
-  return `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encoded}`;
-}
-
-// โหลดฟอนต์ไทย
-async function registerThaiFont(doc: jsPDF): Promise<void> {
+export async function GET() {
   try {
-    // อ่านไฟล์ฟอนต์จาก lib/fonts/Sarabun-normal.js
-    const fs = require('fs');
-    const path = require('path');
-    const fontPath = path.join(process.cwd(), 'lib', 'fonts', 'Sarabun-normal.js');
-    
-    if (!fs.existsSync(fontPath)) {
-      console.warn(`Font file not found at ${fontPath}`);
-      doc.setFont('helvetica');
-      return;
-    }
-    
-    // อ่านไฟล์และดึง base64 string ออกมา
-    const fontFileContent = fs.readFileSync(fontPath, 'utf8');
-    const base64Match = fontFileContent.match(/export const SarabunFont = '([^']+)'/);
-    
-    if (!base64Match || !base64Match[1]) {
-      console.warn('Could not extract font data from Sarabun-normal.js');
-      doc.setFont('helvetica');
-      return;
-    }
-    
-    const base64Font = base64Match[1];
-    
-    // เพิ่มฟอนต์เข้า jsPDF VFS
-    const docAny = doc as any;
-    if (docAny.internal?.vfs) {
-      docAny.internal.vfs['Sarabun-Regular.ttf'] = base64Font;
-      doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
-      doc.setFont('Sarabun');
-      console.log('Thai font loaded successfully');
-    } else {
-      console.warn('jsPDF VFS not available');
-      doc.setFont('helvetica');
-    }
-  } catch (error) {
-    console.error('Error loading Thai font:', error);
-    doc.setFont('helvetica');
-  }
-}
+    const supabase = await createServerClient();
 
-export async function GET(req: NextRequest) {
-  // ดึง query parameter สำหรับการค้นหา
-  const { searchParams } = new URL(req.url);
-  const keyword = (searchParams.get('q') ?? '').trim().toLowerCase();
+    const { data, error } = await supabase
+      .from('attendees')
+      .select(
+        'full_name, organization, job_position, ticket_token, qr_image_url'
+      ) // ✅ ดึง qr_image_url มาด้วย
+      .order('full_name', { ascending: true });
 
-  // ดึงข้อมูลจาก Supabase
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from('attendees')
-    .select(
-      `
-      id,
-      event_id,
-      full_name,
-      phone,
-      organization,
-      job_position,
-      province,
-      region,
-      qr_image_url,
-      ticket_token,
-      food_type,
-      hotel_name
-    `
-    )
-    .order('full_name', { ascending: true });
+    if (error) {
+      console.error('[export-namecards-pdf] Supabase error:', error);
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'ไม่สามารถดึงข้อมูลผู้เข้าร่วมได้',
+          detail: error.message,
+        },
+        { status: 500 }
+      );
+    }
 
-  if (error || !data) {
+    const attendees = (data ?? []) as AttendeeRow[];
+
+    // ✅ โหลดฟอนต์ตามที่มีใน public/fonts
+    const regularFontPath = path.join(
+      process.cwd(),
+      'public',
+      'fonts',
+      'Sarabun-Regular.ttf'
+    );
+    const boldFontPath = path.join(
+      process.cwd(),
+      'public',
+      'fonts',
+      'Sarabun-Bold.ttf'
+    );
+
+    const [regularFontBytes, boldFontBytes] = await Promise.all([
+      fs.readFile(regularFontPath),
+      fs.readFile(boldFontPath),
+    ]);
+
+    const pdfDoc = await PDFDocument.create();
+
+    // ⭐ register fontkit ก่อนใช้ embedFont กับไฟล์ .ttf
+    pdfDoc.registerFontkit(fontkit);
+
+    const thaiFont = await pdfDoc.embedFont(regularFontBytes);
+    const thaiFontBold = await pdfDoc.embedFont(boldFontBytes);
+
+    const pageWidth = 595.28; // A4 width (pt)
+    const pageHeight = 841.89; // A4 height (pt)
+
+    const cardsPerRow = 2;
+    const cardsPerColumn = 4;
+    const cardsPerPage = cardsPerRow * cardsPerColumn;
+
+    const cardWidth = pageWidth / cardsPerRow;
+    const cardHeight = pageHeight / cardsPerColumn;
+
+    const marginX = 18;
+    const marginY = 18;
+
+    const fontSizeName = 18;
+    const fontSizeJob = 12;
+    const fontSizeOrg = 11;
+    const fontSizeToken = 10;
+
+    let page = pdfDoc.addPage([pageWidth, pageHeight]);
+    let cardIndex = 0;
+
+    for (let i = 0; i < attendees.length; i++) {
+      if (cardIndex > 0 && cardIndex % cardsPerPage === 0) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+      }
+
+      const slotOnPage = cardIndex % cardsPerPage;
+      const row = Math.floor(slotOnPage / cardsPerRow);
+      const col = slotOnPage % cardsPerRow;
+
+      const x = col * cardWidth;
+      const y = pageHeight - (row + 1) * cardHeight;
+
+      // 🔲 กรอบการ์ด
+      page.drawRectangle({
+        x: x + 6,
+        y: y + 6,
+        width: cardWidth - 12,
+        height: cardHeight - 12,
+        borderColor: rgb(0.7, 0.7, 0.7),
+        borderWidth: 1,
+      });
+
+      const textAreaX = x + marginX;
+      const textAreaYTop = y + cardHeight - marginY;
+
+      const attendee = attendees[i];
+      const fullName = attendee.full_name ?? '';
+      const org = attendee.organization ?? '';
+      const job = attendee.job_position ?? '';
+      const token = attendee.ticket_token ?? '';
+      const qrUrl = attendee.qr_image_url ?? '';
+
+      // 🧾 พยายามโหลด QR image ถ้ามี url
+      let qrImage = null;
+      if (qrUrl) {
+        try {
+          const res = await fetch(qrUrl);
+          if (res.ok) {
+            const qrArrayBuffer = await res.arrayBuffer();
+            // ส่วนใหญ่ QR เป็น PNG ถ้าคุณใช้ Supabase storage build PNG
+            qrImage = await pdfDoc.embedPng(qrArrayBuffer);
+          } else {
+            console.warn(
+              '[export-namecards-pdf] QR fetch failed:',
+              qrUrl,
+              res.status
+            );
+          }
+        } catch (e) {
+          console.warn(
+            '[export-namecards-pdf] QR fetch error:',
+            qrUrl,
+            (e as Error).message
+          );
+        }
+      }
+
+      // 🧍‍♂️ ชื่อ (bold)
+      if (fullName) {
+        page.drawText(fullName, {
+          x: textAreaX,
+          y: textAreaYTop - fontSizeName - 4,
+          size: fontSizeName,
+          font: thaiFontBold,
+          color: rgb(0, 0, 0),
+        });
+      }
+
+      // 💼 ตำแหน่ง
+      if (job) {
+        page.drawText(job, {
+          x: textAreaX,
+          y: textAreaYTop - fontSizeName - fontSizeJob - 10,
+          size: fontSizeJob,
+          font: thaiFont,
+          color: rgb(0.1, 0.1, 0.1),
+        });
+      }
+
+      // 🏢 หน่วยงาน
+      if (org) {
+        page.drawText(org, {
+          x: textAreaX,
+          y: textAreaYTop - fontSizeName - fontSizeJob - fontSizeOrg - 16,
+          size: fontSizeOrg,
+          font: thaiFont,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+      }
+
+      // 🔖 Token
+      if (token) {
+        page.drawText(`รหัส: ${token}`, {
+          x: textAreaX,
+          y: y + marginY,
+          size: fontSizeToken,
+          font: thaiFont,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+      }
+
+      // 🧩 วาด QR มุมขวาบนของการ์ด (ถ้ามีรูป)
+      if (qrImage) {
+        const qrSize = 72; // ปรับขนาด QR ได้ตามใจ
+        page.drawImage(qrImage, {
+          x: x + cardWidth - qrSize - marginX,
+          y: y + cardHeight - qrSize - marginY,
+          width: qrSize,
+          height: qrSize,
+        });
+      }
+
+      cardIndex++;
+    }
+
+    const pdfBytes = await pdfDoc.save();
+
+    const pdfArrayBuffer = pdfBytes.buffer.slice(
+      pdfBytes.byteOffset,
+      pdfBytes.byteOffset + pdfBytes.byteLength
+    ) as ArrayBuffer;
+
+    return new NextResponse(pdfArrayBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition':
+          'attachment; filename="namecards-attendees.pdf"',
+      },
+    });
+  } catch (err: any) {
+    console.error('[export-namecards-pdf] Unexpected error:', err);
     return NextResponse.json(
-      { error: 'ไม่สามารถโหลดข้อมูลผู้เข้าร่วมได้' },
+      {
+        ok: false,
+        message: 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF',
+        detail: String(err?.message ?? err),
+      },
       { status: 500 }
     );
   }
-
-  const attendees: AttendeeCardRow[] = data as AttendeeCardRow[];
-
-  // filter ตาม keyword (ชื่อ / หน่วยงาน / ตำแหน่ง / จังหวัด / token)
-  const filtered = keyword
-    ? attendees.filter((a) => {
-        const name = (a.full_name ?? '').toLowerCase();
-        const org = (a.organization ?? '').toLowerCase();
-        const job = (a.job_position ?? '').toLowerCase();
-        const prov = (a.province ?? '').toLowerCase();
-        const token = (a.ticket_token ?? '').toLowerCase();
-        return (
-          name.includes(keyword) ||
-          org.includes(keyword) ||
-          job.includes(keyword) ||
-          prov.includes(keyword) ||
-          token.includes(keyword)
-        );
-      })
-    : attendees;
-
-  if (filtered.length === 0) {
-    return NextResponse.json(
-      { error: 'ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา' },
-      { status: 404 }
-    );
-  }
-
-  // สร้าง PDF
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-  });
-
-  // *** ส่วนสำคัญ: การลงทะเบียนและตั้งค่าฟอนต์ไทย ***
-  await registerThaiFont(doc);
-
-  // สำหรับแต่ละนามบัตร
-  for (let i = 0; i < filtered.length; i++) {
-    const a = filtered[i];
-    const qrUrl = buildQrUrl(a.ticket_token, a.qr_image_url);
-
-    // เพิ่มหน้าใหม่สำหรับแต่ละคน (ยกเว้นหน้าแรก)
-    if (i > 0) {
-      doc.addPage();
-    }
-
-    // หัวข้อ
-    doc.setFontSize(20);
-    doc.text('นามบัตรผู้เข้าร่วมงาน', 105, 20, { align: 'center' });
-
-    // ข้อมูลส่วนบุคคล
-    doc.setFontSize(16);
-    doc.text(`ชื่อ: ${a.full_name || 'ไม่ระบุชื่อ'}`, 20, 40);
-
-    doc.setFontSize(12);
-    doc.text(`หน่วยงาน: ${a.organization || 'ไม่ระบุหน่วยงาน'}`, 20, 50);
-    doc.text(`ตำแหน่ง: ${a.job_position || 'ไม่ระบุตำแหน่ง'}`, 20, 60);
-    doc.text(`จังหวัด: ${a.province || 'ไม่ระบุจังหวัด'}`, 20, 70);
-    doc.text(`โทรศัพท์: ${a.phone || 'ไม่ระบุ'}`, 20, 80);
-
-    // QR Code (ถ้ามี)
-    if (qrUrl) {
-      try {
-        // ดาวน์โหลด QR image และใส่ใน PDF
-        const qrResponse = await fetch(qrUrl);
-        const qrBlob = await qrResponse.blob();
-        const qrBase64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(qrBlob);
-        });
-
-        doc.addImage(qrBase64, 'PNG', 70, 100, 70, 70);
-        doc.setFontSize(10);
-        doc.text('คิวอาร์โค้ดสำหรับเช็คอิน', 105, 180, { align: 'center' });
-      } catch (err) {
-        // ถ้าดาวน์โหลด QR ไม่ได้ ให้แสดง text แทน
-        doc.setFontSize(10);
-        doc.text('ไม่สามารถโหลดคิวอาร์โค้ดได้', 105, 140, { align: 'center' });
-      }
-    } else {
-      doc.setFontSize(10);
-      doc.text('ไม่มีคิวอาร์โค้ด', 105, 140, { align: 'center' });
-    }
-  }
-
-  // ส่ง PDF กลับเป็น response
-  const pdfData = doc.output('arraybuffer');
-  return new NextResponse(Buffer.from(pdfData), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="namecards.pdf"',
-    },
-  });
 }
