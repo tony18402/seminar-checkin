@@ -1,6 +1,6 @@
 // app/api/admin/import/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { createServerClient } from '@/lib/supabaseServer';
 
 // raw row จาก Excel
@@ -111,14 +111,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2) อ่านไฟล์ Excel ด้วย xlsx
+    // 2) อ่านไฟล์ Excel ด้วย ExcelJS
     const arrayBuffer = await file.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
+    const worksheet = workbook.getWorksheet(1);
 
-    const rows: RawExcelRow[] = XLSX.utils.sheet_to_json(sheet, {
-      defval: null,
+    if (!worksheet) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'ไฟล์ Excel ไม่มี sheet ใดเลย',
+        },
+        { status: 400 }
+      );
+    }
+
+    // อ่านแถวข้อมูล
+    const rows: RawExcelRow[] = [];
+    const headers: string[] = [];
+    
+    // อ่านส่วนหัว
+    const headerRow = worksheet.getRow(1);
+    headerRow?.eachCell((cell, colNum) => {
+      headers[colNum - 1] = String(cell.value || '').trim();
+    });
+
+    // อ่านข้อมูล
+    worksheet.eachRow((row, rowNum) => {
+      if (rowNum === 1) return; // ข้าม header
+      const obj: RawExcelRow = {};
+      row.eachCell((cell, colNum) => {
+        const header = headers[colNum - 1];
+        if (header) {
+          obj[header] = cell.value ?? null;
+        }
+      });
+      if (Object.keys(obj).length > 0) {
+        rows.push(obj);
+      }
     });
 
     // 3) map จาก Excel → โครงสร้าง attendees (ตาม schema ใหม่)
