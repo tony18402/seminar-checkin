@@ -14,7 +14,8 @@ type AttendeeRow = {
   full_name: string | null;
   organization: string | null;
   job_position: string | null;
-  ticket_token: string | null;
+  province: string | null;
+  region: number | null;
   qr_image_url: string | null; // ✅ เพิ่มฟิลด์ QR
 };
 
@@ -25,7 +26,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('attendees')
       .select(
-        'full_name, organization, job_position, ticket_token, qr_image_url'
+        'full_name, organization, job_position, province, region, qr_image_url'
       ) // ✅ ดึง qr_image_url มาด้วย
       .order('full_name', { ascending: true });
 
@@ -86,7 +87,7 @@ export async function GET() {
     const fontSizeName = 18;
     const fontSizeJob = 12;
     const fontSizeOrg = 11;
-    const fontSizeToken = 10;
+    const fontSizeRegionProvince = 11;
 
     let page = pdfDoc.addPage([pageWidth, pageHeight]);
     let cardIndex = 0;
@@ -120,7 +121,8 @@ export async function GET() {
       const fullName = attendee.full_name ?? '';
       const org = attendee.organization ?? '';
       const job = attendee.job_position ?? '';
-      const token = attendee.ticket_token ?? '';
+      const province = attendee.province ?? '';
+      const region = attendee.region ?? null;
       const qrUrl = attendee.qr_image_url ?? '';
 
       // 🧾 พยายามโหลด QR image ถ้ามี url
@@ -181,23 +183,28 @@ export async function GET() {
         });
       }
 
-      // 🔖 Token
-      if (token) {
-        page.drawText(`รหัส: ${token}`, {
+      // 🌍 ภาค + จังหวัด
+      if (region || province) {
+        const regionLabel = region ? `ภาค ${region}` : '';
+        const provinceLabel = province ? `จังหวัด${province}` : '';
+        const sep = regionLabel && provinceLabel ? ' – ' : '';
+        const line = `${regionLabel}${sep}${provinceLabel}`;
+
+        page.drawText(line, {
           x: textAreaX,
           y: y + marginY,
-          size: fontSizeToken,
+          size: fontSizeRegionProvince,
           font: thaiFont,
-          color: rgb(0.3, 0.3, 0.3),
+          color: rgb(0.25, 0.25, 0.25),
         });
       }
 
-      // 🧩 วาด QR มุมขวาบนของการ์ด (ถ้ามีรูป)
+      // 🧩 วาด QR ด้านล่างของการ์ด (ถ้ามีรูป)
       if (qrImage) {
         const qrSize = 72; // ปรับขนาด QR ได้ตามใจ
         page.drawImage(qrImage, {
-          x: x + cardWidth - qrSize - marginX,
-          y: y + cardHeight - qrSize - marginY,
+          x: x + cardWidth / 2 - qrSize / 2,
+          y: y + marginY + 8,
           width: qrSize,
           height: qrSize,
         });
