@@ -15,6 +15,8 @@ type AdminPageProps = {
   searchParams: Promise<{
     q?: string;
     status?: string; // all | checked | unchecked
+    region?: string;
+    organization?: string;
   }>;
 };
 
@@ -76,6 +78,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const sp = await searchParams;
   const keyword = (sp.q ?? '').trim().toLowerCase();
   const status = sp.status ?? 'all';
+  const regionFilter = (sp.region ?? '').trim();
+  const organizationFilter = (sp.organization ?? '').trim().toLowerCase();
 
   const supabase = createServerClient();
 
@@ -126,6 +130,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const totalChecked = attendees.filter((a) => a.checked_in_at).length;
   const totalWithSlip = attendees.filter((a) => a.slip_url).length;
 
+  // ดึงรายการศาล / หน่วยงานทั้งหมดจากข้อมูลจริง สำหรับทำ dropdown เลือก
+  const organizationOptions = Array.from(
+    new Set(
+      attendees
+        .map((a) => a.organization ?? '')
+        .filter((org) => org.trim().length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b, 'th-TH'));
+
   let filtered = attendees;
 
   if (keyword) {
@@ -149,6 +162,19 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     filtered = filtered.filter((a) => a.checked_in_at);
   } else if (status === 'unchecked') {
     filtered = filtered.filter((a) => !a.checked_in_at);
+  }
+
+  if (regionFilter) {
+    const regionNumber = Number(regionFilter);
+    if (!Number.isNaN(regionNumber)) {
+      filtered = filtered.filter((a) => a.region === regionNumber);
+    }
+  }
+
+  if (organizationFilter) {
+    filtered = filtered.filter((a) =>
+      (a.organization ?? '').toLowerCase().includes(organizationFilter)
+    );
   }
 
   return (
@@ -205,6 +231,44 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   placeholder="พิมพ์คำค้นหา เช่น ชื่อ หน่วยงาน ตำแหน่ง หรือจังหวัด"
                   className="admin-filters__input"
                 />
+              </div>
+
+              <div className="admin-filters__field admin-filters__field--inline">
+                <div className="admin-filters__inline-group">
+                  <label className="admin-filters__label">ภาค</label>
+                  <select
+                    name="region"
+                    defaultValue={regionFilter}
+                    className="admin-filters__select"
+                  >
+                    <option value="">ทุกภาค</option>
+                    <option value="1">ภาค 1</option>
+                    <option value="2">ภาค 2</option>
+                    <option value="3">ภาค 3</option>
+                    <option value="4">ภาค 4</option>
+                    <option value="5">ภาค 5</option>
+                    <option value="6">ภาค 6</option>
+                    <option value="7">ภาค 7</option>
+                    <option value="8">ภาค 8</option>
+                    <option value="9">ภาค 9</option>
+                  </select>
+                </div>
+
+                <div className="admin-filters__inline-group">
+                  <label className="admin-filters__label">ศาล / หน่วยงาน</label>
+                  <select
+                    name="organization"
+                    defaultValue={sp.organization ?? ''}
+                    className="admin-filters__select"
+                  >
+                    <option value="">ทุกศาล / หน่วยงาน</option>
+                    {organizationOptions.map((org) => (
+                      <option key={org} value={org}>
+                        {org}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="admin-filters__field admin-filters__field--inline">

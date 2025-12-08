@@ -74,8 +74,9 @@ export async function GET() {
     const pageWidth = 595.28; // A4 width (pt)
     const pageHeight = 841.89; // A4 height (pt)
 
+    // จำนวนการ์ดต่อหน้า: 2 คอลัมน์ × 3 แถว = 6 ช่อง
     const cardsPerRow = 2;
-    const cardsPerColumn = 4;
+    const cardsPerColumn = 3; // เดิม 4
     const cardsPerPage = cardsPerRow * cardsPerColumn;
 
     const cardWidth = pageWidth / cardsPerRow;
@@ -154,36 +155,25 @@ export async function GET() {
       if (fullName) {
         page.drawText(fullName, {
           x: textAreaX,
-          y: textAreaYTop - fontSizeName - 4,
+          y: textAreaYTop - fontSizeName,
           size: fontSizeName,
           font: thaiFontBold,
           color: rgb(0, 0, 0),
         });
       }
 
-      // 💼 ตำแหน่ง
+      // 💼 ตำแหน่ง (ใต้ชื่อ)
       if (job) {
         page.drawText(job, {
           x: textAreaX,
-          y: textAreaYTop - fontSizeName - fontSizeJob - 10,
+          y: textAreaYTop - fontSizeName - fontSizeJob - 6,
           size: fontSizeJob,
           font: thaiFont,
           color: rgb(0.1, 0.1, 0.1),
         });
       }
 
-      // 🏢 หน่วยงาน
-      if (org) {
-        page.drawText(org, {
-          x: textAreaX,
-          y: textAreaYTop - fontSizeName - fontSizeJob - fontSizeOrg - 16,
-          size: fontSizeOrg,
-          font: thaiFont,
-          color: rgb(0.2, 0.2, 0.2),
-        });
-      }
-
-      // 🌍 ภาค + จังหวัด
+      // 🌍 ภาค + จังหวัด (อยู่ก่อนหน่วยงาน)
       if (region || province) {
         const regionLabel = region ? `ภาค ${region}` : '';
         const provinceLabel = province ? `จังหวัด${province}` : '';
@@ -192,19 +182,36 @@ export async function GET() {
 
         page.drawText(line, {
           x: textAreaX,
-          y: y + marginY,
+          y: textAreaYTop - fontSizeName - fontSizeJob - fontSizeRegionProvince - 14,
           size: fontSizeRegionProvince,
           font: thaiFont,
           color: rgb(0.25, 0.25, 0.25),
         });
       }
 
-      // 🧩 วาด QR ด้านล่างของการ์ด (ถ้ามีรูป)
+      // 🏢 หน่วยงาน (ถัดจากภาค/จังหวัด)
+      if (org) {
+        page.drawText(org, {
+          x: textAreaX,
+          y:
+            textAreaYTop -
+            fontSizeName -
+            fontSizeJob -
+            fontSizeRegionProvince -
+            fontSizeOrg -
+            22,
+          size: fontSizeOrg,
+          font: thaiFont,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+      }
+
+      // 🧩 วาด QR ด้านล่าง ใหญ่ขึ้น
       if (qrImage) {
-        const qrSize = 72; // ปรับขนาด QR ได้ตามใจ
+        const qrSize = 96; // ขยายจาก 72 -> 96
         page.drawImage(qrImage, {
           x: x + cardWidth / 2 - qrSize / 2,
-          y: y + marginY + 8,
+          y: y + marginY + 10,
           width: qrSize,
           height: qrSize,
         });

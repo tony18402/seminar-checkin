@@ -5,12 +5,8 @@ import { useState, type FormEvent, type ChangeEvent } from 'react';
 
 type FoodType =
   | 'normal'
-  | 'no_pork'
   | 'vegetarian'
-  | 'vegan'
   | 'halal'
-  | 'seafood_allergy'
-  | 'other';
 
 type PositionType = 'chief_judge' | 'associate_judge';
 
@@ -150,6 +146,7 @@ export default function RegisterPage() {
   const [organization, setOrganization] = useState(''); // จะมาจาก list ตามภาค
   const [province, setProvince] = useState('');
   const [region, setRegion] = useState(''); // 1–9
+  const [coordinatorName, setCoordinatorName] = useState(''); // ชื่อ-สกุลผู้ประสานงานของศาลนี้
   const [hotelName, setHotelName] = useState('');
   const [participants, setParticipants] = useState<Participant[]>([
     {
@@ -241,6 +238,10 @@ export default function RegisterPage() {
       setErrorMessage('กรุณากรอกจังหวัด');
       return;
     }
+    if (!coordinatorName.trim()) {
+      setErrorMessage('กรุณากรอกชื่อ-สกุลผู้ประสานงาน');
+      return;
+    }
     if (!hotelName) {
       setErrorMessage('กรุณาเลือกโรงแรมที่พัก');
       return;
@@ -264,13 +265,14 @@ export default function RegisterPage() {
       const formData = new FormData();
       formData.append('organization', organization);
       formData.append('province', province);
-      formData.append('region', region); // 1–9
+      formData.append('region', region);
+      formData.append('coordinatorName', coordinatorName);
       formData.append('hotelName', hotelName);
       formData.append('totalAttendees', String(totalAttendees));
       formData.append('participants', JSON.stringify(participants));
 
       if (slipFile) {
-        formData.append('slip', slipFile);
+        formData.append('slip', slipFile); // << แนบสลีปแค่ไฟล์เดียว
       }
 
       const res = await fetch('/api/register', {
@@ -379,6 +381,18 @@ export default function RegisterPage() {
               readOnly
             />
           </div>
+
+          <div>
+            <label htmlFor="coordinatorName">ชื่อ-สกุลผู้ประสานงาน *</label>
+            <input
+              id="coordinatorName"
+              type="text"
+              value={coordinatorName}
+              onChange={(e) => setCoordinatorName(e.target.value)}
+              placeholder="เช่น นางสาวกานดา ตัวอย่างดี"
+              required
+            />
+          </div>
         </section>
 
         {/* 2. ผู้เข้าร่วมสัมมนาฯ */}
@@ -443,12 +457,8 @@ export default function RegisterPage() {
                   }
                 >
                   <option value="normal">ทั่วไป</option>
-                  <option value="no_pork">ไม่ทานหมู</option>
                   <option value="vegetarian">มังสวิรัติ</option>
-                  <option value="vegan">เจ / วีแกน</option>
-                  <option value="halal">ฮาลาล</option>
-                  <option value="seafood_allergy">แพ้อาหารทะเล</option>
-                  <option value="other">อื่น ๆ</option>
+                  <option value="halal">อิสลาม</option>
                 </select>
               </div>
 

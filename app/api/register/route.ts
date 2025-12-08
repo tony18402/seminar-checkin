@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       .toString()
       .trim();
     const slip = formData.get('slip') as File | null;
+    const coordinatorName = (formData.get('coordinatorName') || '').toString().trim();
 
     const region = Number.parseInt(regionStr || '0', 10);
     const totalAttendees = Number.parseInt(totalAttendeesStr || '0', 10) || 0;

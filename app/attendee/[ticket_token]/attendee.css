@@ -280,6 +280,12 @@ a {
 	gap: 2px;
 }
 
+.attendee-region-note {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 4px;
+}
+
 @media (min-width: 640px) {
 	.attendee-page-container {
 		max-width: 480px;

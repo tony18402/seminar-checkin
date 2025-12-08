@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
 import { useEffect, useState, useTransition } from 'react';
-import type { ChangeEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import './attendee.css';
+import "./attendee.css";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -16,15 +15,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-type FoodType =
-  | 'normal'
-  | 'no_pork'
-  | 'vegetarian'
-  | 'vegan'
-  | 'halal'
-  | 'seafood_allergy'
-  | 'other';
 
 type Attendee = {
   id: string;
@@ -39,7 +29,6 @@ type Attendee = {
   slip_url: string | null;
   checked_in_at: string | null;
   ticket_token: string | null;
-  food_type: FoodType | null;
   hotel_name: string | null;     // ✅ โรงแรม
 };
 
@@ -54,9 +43,7 @@ export default function Page() {
   const params = useParams<{ ticket_token?: string }>();
   const router = useRouter();
   const ticketToken =
-    typeof params?.ticket_token === 'string'
-      ? params.ticket_token.trim()
-      : '';
+    typeof params?.ticket_token === "string" ? params.ticket_token.trim() : "";
 
   const [attendee, setAttendee] = useState<Attendee | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -101,7 +88,6 @@ export default function Page() {
             slip_url,
             checked_in_at,
             ticket_token,
-            food_type,
             hotel_name
           `
           )
@@ -147,22 +133,6 @@ export default function Page() {
       cancelled = true;
     };
   }, [ticketToken]);
-
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    // no-op: slip upload is no longer supported on this page
-  };
-
-  const handleClearSelectedFile = () => {
-    // no-op: slip upload is no longer supported on this page
-  };
-
-  const handleFoodTypeChange = (value: FoodType) => {
-    // no-op: food type is read-only on this page now
-  };
-
-  const handleUploadSlip = async () => {
-    // no-op: slip upload is handled by staff / other flow now
-  };
 
   const handleCheckin = async () => {
     setCheckinMessage(null);
@@ -211,7 +181,6 @@ export default function Page() {
       setCheckedInAt(data.checked_in_at || new Date().toISOString());
       setCheckinMessage(data.message || 'เช็กอินสำเร็จแล้ว');
 
-      // เมื่อเช็กอินสำเร็จ เปลี่ยนไปหน้าแสดงข้อความต้อนรับ
       router.push(`/attendee/${encodeURIComponent(ticketToken)}/welcome`);
     } catch (err: any) {
       console.error('checkin error', err);
@@ -301,6 +270,19 @@ export default function Page() {
             <div>โทรศัพท์: {attendee.phone || 'ไม่ระบุ'}</div>
             <div>ตำแหน่ง: {attendee.job_position || 'ไม่ระบุตำแหน่ง'}</div>
             <div>ภาค: {attendee.region ? `ภาค ${attendee.region}` : 'ไม่ระบุภาค'}</div>
+            {attendee.region && (
+              <div className="attendee-region-note">
+                {attendee.region === 1 && 'ภาค 1: กรุงเทพมหานครและจังหวัดในภาคกลาง'}
+                {attendee.region === 2 && 'ภาค 2: จังหวัดในภาคตะวันออก'}
+                {attendee.region === 3 && 'ภาค 3: จังหวัดในภาคอีสานตอนล่าง'}
+                {attendee.region === 4 && 'ภาค 4: จังหวัดในภาคอีสานตอนบน'}
+                {attendee.region === 5 && 'ภาค 5: จังหวัดในภาคเหนือ'}
+                {attendee.region === 6 && 'ภาค 6: จังหวัดในภาคกลางตอนบน'}
+                {attendee.region === 7 && 'ภาค 7: จังหวัดในภาคตะวันตก'}
+                {attendee.region === 8 && 'ภาค 8: จังหวัดในภาคใต้ตอนบน'}
+                {attendee.region === 9 && 'ภาค 9: จังหวัดในภาคใต้ตอนล่าง'}
+              </div>
+            )}
           </div>
 
           <div
@@ -323,54 +305,30 @@ export default function Page() {
             </p>
           )}
 
-          {/* ประเภทอาหารไม่แสดงในหน้านี้แล้ว ตาม requirement ใหม่ */}
         </section>
 
-        {/* บล็อกเช็กอินอย่างเดียว */}
+        {/* บล็อกเช็กอินอย่างเดียว ไม่มีอัปโหลดสลิป */}
         <section className="form-section">
-          <div>
-            <h3>เช็กอินเข้าร่วมงาน</h3>
-            <p className="form-description">
-              แสดงสถานะการเช็กอินของท่าน หากต้องการให้เจ้าหน้าที่ช่วยเช็กอิน โปรดแสดงหน้าจอนี้
-            </p>
+          <h3>เช็กอินเข้าร่วมงาน</h3>
+          <p className="form-description">
+            ตรวจสอบข้อมูลด้านบนให้ถูกต้อง แล้วกดปุ่มด้านล่างเพื่อเช็กอินเข้าร่วมงาน
+          </p>
 
-            <button
-              type="button"
-              className={`btn ${
-                isCheckedIn ? 'btn-secondary' : 'btn-success'
-              }`}
-              onClick={handleCheckin}
-              disabled={isBusy || isCheckedIn}
-            >
-              {isCheckingIn
-                ? 'กำลังเช็กอิน…'
-                : isCheckedIn
-                ? 'เช็กอินเรียบร้อยแล้ว'
-                : 'เช็กอินเข้าร่วมงาน'}
-            </button>
+          <button
+            type="button"
+            className={`btn ${isCheckedIn ? "btn-secondary" : "btn-success"}`}
+            onClick={handleCheckin}
+            disabled={isBusy || isCheckedIn}
+          >
+            {isCheckingIn
+              ? "กำลังเช็กอิน…"
+              : isCheckedIn
+              ? "เช็กอินเรียบร้อยแล้ว"
+              : "เช็กอินเข้าร่วมงาน"}
+          </button>
 
-            {checkinMessage && (
-              <p className="message success">{checkinMessage}</p>
-            )}
-            {checkinError && <p className="message error">{checkinError}</p>}
-          </div>
-        </section>
-
-        {/* คำแนะนำการใช้งานสำหรับผู้สูงอายุ */}
-        <section className="form-section">
-          <div>
-            <h3>คำแนะนำการใช้งานแบบง่าย ๆ</h3>
-            <p className="form-description">
-              ถ้าใช้งานไม่ถนัด สามารถยื่นโทรศัพท์ให้เจ้าหน้าที่ช่วยกดแทนได้
-            </p>
-            <ul className="attendee-help-list">
-              <li>1) เปิดหน้านี้จากลิงก์ในไลน์ หรือ QR ที่ได้รับ</li>
-              <li>2) ตรวจสอบว่าชื่อและหน่วยงานถูกต้อง</li>
-              <li>3) ถ้ายังไม่เช็กอิน ให้บอกเจ้าหน้าที่ว่าต้องการเช็กอิน</li>
-              <li>4) ยื่นโทรศัพท์ให้เจ้าหน้าที่ช่วยกดปุ่มเช็กอินให้</li>
-              <li>5) ถ้ามีปัญหาใด ๆ ให้บอกเจ้าหน้าที่ใกล้ตัวได้เลย</li>
-            </ul>
-          </div>
+          {checkinMessage && <p className="message success">{checkinMessage}</p>}
+          {checkinError && <p className="message error">{checkinError}</p>}
         </section>
       </div>
     </main>

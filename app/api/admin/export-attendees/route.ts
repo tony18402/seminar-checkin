@@ -22,6 +22,7 @@ type DbAttendee = {
   qr_image_url: string | null;
   ticket_token: string | null;
   created_at: string | null;
+  coordinator_name: string | null; // 👈 เพิ่มบรรทัดนี้
 };
 
 // เดานามสกุลรูปจาก URL
@@ -50,18 +51,10 @@ function formatFoodType(foodType: string | null): string {
   switch (foodType) {
     case 'normal':
       return 'อาหารทั่วไป';
-    case 'no_pork':
-      return 'ไม่ทานหมู';
     case 'vegetarian':
       return 'มังสวิรัติ';
-    case 'vegan':
-      return 'เจ / วีแกน';
     case 'halal':
       return 'ฮาลาล';
-    case 'seafood_allergy':
-      return 'แพ้อาหารทะเล';
-    case 'other':
-      return 'อื่น ๆ';
     default:
       return 'ไม่ระบุ';
   }
@@ -88,7 +81,8 @@ export async function GET() {
       slip_url,
       qr_image_url,
       ticket_token,
-      created_at
+      created_at,
+      coordinator_name
     `
     )
     .order('full_name', { ascending: true });
@@ -115,6 +109,7 @@ export async function GET() {
     { header: 'ตำแหน่ง', key: 'job_position', width: 24 },
     { header: 'เบอร์โทร', key: 'phone', width: 16 },
     { header: 'ประเภทอาหาร', key: 'food_type', width: 18 },
+    { header: 'ชื่อผู้ประสานงาน', key: 'coordinator_name', width: 26 }, // 👈 เพิ่ม
     { header: 'โรงแรม', key: 'hotel_name', width: 24 },
     { header: 'สถานะเช็กอิน', key: 'checkin_status', width: 16 },
     { header: 'เวลาเช็กอิน', key: 'checked_in_at', width: 22 },
@@ -138,6 +133,7 @@ export async function GET() {
       job_position: a.job_position ?? '',
       phone: a.phone ?? '',
       food_type: formatFoodType(a.food_type ?? null),
+      coordinator_name: a.coordinator_name ?? '', // 👈 ตรงนี้
       hotel_name: a.hotel_name ?? '',
       checkin_status: a.checked_in_at ? 'เช็กอินแล้ว' : 'ยังไม่เช็กอิน',
       checked_in_at: a.checked_in_at ?? '',
