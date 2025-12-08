@@ -251,8 +251,6 @@ a:hover {
 }
 
 /* -------------------------------------------------- Admin Layout -------------------------------------------------- */
-
-/* กล่อง layout ตรงกลางแบบในภาพ */
 .admin-layout {
   position: relative;
   z-index: 1;
@@ -263,6 +261,7 @@ a:hover {
   gap: 30px;            /* ช่องไฟระหว่าง header / summary / filter / table */
   padding: 30px;        /* ระยะขอบด้านในเท่าที่เห็นในภาพ */
   animation: fadeInUp 0.6s ease-out;
+  box-shadow: none; /* ให้หน้าเป็นพื้นหลังเรียบ + gradient เบา ๆ */
 }
 
 @keyframes fadeInUp {
@@ -276,6 +275,7 @@ a:hover {
     }
 }
 
+/* -------------------------------------------------- Admin Header -------------------------------------------------- */
 .admin-header {
     padding-bottom: 20px;
     position: relative;
@@ -332,151 +332,107 @@ a:hover {
 
 /* -------------------------------------------------- Admin Summary Cards -------------------------------------------------- */
 .admin-summary {
-    margin-top: 30px;
+    margin-top: 24px;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
 }
 
 .admin-summary__item {
     flex: 1;
     min-width: 220px;
-    padding: 30px 40px;
-    border-radius: var(--radius-lg);
-    background: #ffffff;
-    border: 2px solid var(--border-soft);
-    box-shadow: var(--shadow-medium);
+    padding: 20px 24px;
+    border-radius: 14px;
+    background: #ffffff;                  /* การ์ดขาว */
+    border: 1px solid rgba(148, 116, 84, 0.18); /* ขอบบาง */
+    box-shadow: var(--shadow-soft);       /* เงาอ่อนสไตล์ dashboard */
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    gap: 8px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color 0.2s ease;
     position: relative;
     overflow: hidden;
 }
 
+/* ตัดแถบ animation ด้านบนให้เรียบง่าย */
 .admin-summary__item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.5s ease;
-}
-
-.admin-summary__item:hover::before {
-    transform: scaleX(1);
-}
-
-.admin-summary__item:nth-child(2) {
-    border-color: rgba(92, 184, 92, 0.6);
-}
-
-.admin-summary__item:nth-child(2)::before {
-    background: linear-gradient(90deg, var(--primary-green-start), var(--primary-green-end));
-}
-
-.admin-summary__item:nth-child(3) {
-    border-color: rgba(91, 192, 222, 0.6);
-}
-
-.admin-summary__item:nth-child(3)::before {
-    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    content: none;
 }
 
 .admin-summary__item:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-deep);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    border-color: rgba(148, 116, 84, 0.28);
+}
+
+.admin-summary__item:nth-child(2),
+.admin-summary__item:nth-child(3) {
+    border-color: rgba(148, 116, 84, 0.18); /* ไม่ต้องเน้นสีต่างกันมาก */
 }
 
 .admin-summary__label {
-    font-size: 20px;
+    font-size: 18px;
     color: var(--text-soft);
 }
 
 .admin-summary__value {
-    font-size: 36px;
+    font-size: 30px;
     font-weight: 700;
     color: var(--text-strong);
-    position: relative;
-    display: inline-block;
-}
-
-@media (min-width: 768px) {
-    .admin-summary__value {
-        font-size: 40px;
-    }
-}
-
-.admin-summary__value--green {
-    color: #449d44;
-}
-
-.admin-summary__value--blue {
-    color: #46b8da;
 }
 
 /* -------------------------------------------------- Admin Filters -------------------------------------------------- */
 .admin-filters {
-    margin-top: 20px;
+    margin-top: 18px;
 }
 
 .admin-filters__form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    padding: 20px 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* ใช้ grid จัด layout */
+    gap: 14px 18px;                                             /* spacing สม่ำเสมอ */
+    padding: 18px 20px;
     border-radius: var(--radius-lg);
     background: #ffffff;
-    border: 2px solid var(--border-soft);
-    box-shadow: var(--shadow-medium);
+    border: 1px solid rgba(148, 116, 84, 0.16); /* เส้นขอบเบาลง */
+    box-shadow: var(--shadow-soft);             /* เงาเบา */
     position: relative;
     overflow: hidden;
 }
 
+/* ตัด decoration มุมขวาบนออกให้สะอาด */
 .admin-filters__form::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(91, 192, 222, 0.1) 0%, rgba(91, 192, 222, 0) 70%);
-    transform: translate(30px, -30px);
+    content: none;
 }
 
 .admin-filters__field {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
 .admin-filters__field--inline {
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
+    gap: 10px;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .admin-filters__label {
-    font-size: 18px;
+    font-size: 16px;
     color: var(--text-main);
 }
 
+/* input/select ปรับฟอนต์และ padding เล็กลงนิดหน่อย */
 .admin-filters__input,
 .admin-filters__select {
     border-radius: var(--radius-pill);
-    border: 2px solid var(--border-strong);
+    border: 1px solid var(--border-strong);
     background: #ffffff;
-    padding: 12px 18px;
-    font-size: 20px;
+    padding: 8px 14px;
+    font-size: 18px;
     color: var(--text-main);
     transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-    position: relative;
 }
 
 .admin-filters__input::placeholder {
@@ -487,51 +443,41 @@ a:hover {
 .admin-filters__select:focus {
     outline: none;
     border-color: #5bc0de;
-    box-shadow: 0 0 0 1px rgba(91, 192, 222, 0.5);
+    box-shadow: 0 0 0 1px rgba(91, 192, 222, 0.35);
     background: #ffffff;
 }
 
 .admin-filters__actions {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     align-items: center;
     flex-wrap: wrap;
 }
 
+/* ปรับปุ่มให้ไม่ใหญ่เกิน */
 .admin-filters__button {
     border: none;
     border-radius: var(--radius-pill);
-    padding: 12px 20px;
-    font-size: 20px;
+    padding: 8px 16px;
+    font-size: 18px;
     font-weight: 600;
     cursor: pointer;
     background: linear-gradient(to right, #5bc0de, #46b8da);
     color: #ffffff;
-    box-shadow: var(--shadow-medium);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.12s ease;
     position: relative;
     overflow: hidden;
 }
 
 .admin-filters__button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.admin-filters__button:hover::before {
-    left: 100%;
+    content: none; /* ตัด shimmer ให้สะอาดขึ้น */
 }
 
 .admin-filters__button:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-deep);
-    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+    filter: brightness(1.03);
 }
 
 .admin-filters__button:active {
@@ -540,34 +486,29 @@ a:hover {
 }
 
 .admin-filters__link-reset {
-    font-size: 18px;
+    font-size: 16px;
     color: var(--text-soft);
     text-decoration: underline;
 }
 
 /* -------------------------------------------------- Admin Table -------------------------------------------------- */
 .admin-table__wrapper {
-    margin-top: 6px;
+    margin-top: 10px;
     border-radius: var(--radius-lg);
-    background: #ffffff;
-    border: 2px solid var(--border-soft);
-    box-shadow: var(--shadow-deep);
+    background: #ffffff;                                   /* การ์ดขาว */
+    border: 1px solid rgba(148, 116, 84, 0.16);           /* ขอบ 1px */
+    box-shadow: var(--shadow-soft);                       /* เงาอ่อน */
     overflow: hidden;
     position: relative;
 }
 
+/* ตัดแถบ gradient ด้านบนให้เรียบง่าย */
 .admin-table__wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
+    content: none;
 }
 
 .admin-table__inner {
-    max-height: 560px;
+    max-height: 520px;
     overflow: auto;
     border-radius: var(--radius-lg);
 }
@@ -589,71 +530,63 @@ a:hover {
 .admin-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 18px;
+    font-size: 16px; /* ฟอนต์เล็กลงเล็กน้อย */
 }
 
 .admin-table thead {
     position: sticky;
     top: 0;
     z-index: 1;
-    background: #ffffff;
+    background: #faf8f3;
 }
 
 .admin-table th,
 .admin-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-soft);
+    padding: 8px 12px;               /* ช่องไฟเล็กลงเล็กน้อย */
+    border-bottom: 1px solid rgba(148, 116, 84, 0.12);
     text-align: left;
     color: var(--text-main);
 }
 
 .admin-table th {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--text-soft);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    position: relative;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    background: #faf8f3;
 }
 
+/* ตัด animation เส้นใต้หัวตาราง */
 .admin-table th::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, var(--primary-blue-start), var(--primary-blue-end));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
+    content: none;
 }
 
-.admin-table:hover th::after {
-    transform: scaleX(1);
-}
-
+/* แถวสลับสีอ่อน ๆ */
 .admin-table tbody tr:nth-child(even) {
     background: #ffffff;
 }
 
 .admin-table tbody tr:nth-child(odd) {
-    background: var(--accent-badge-bg);
+    background: #fbf7ef;
 }
 
 .admin-table tbody tr {
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.15s ease;
 }
 
+/* hover ไม่เวอร์ */
 .admin-table tbody tr:hover {
-    background: rgba(91, 192, 222, 0.1);
-    transform: scale(1.01);
+    background: #f1ebe0;
+    transform: none;
 }
 
 .admin-table__empty {
     text-align: center;
-    padding: 20px 10px;
-    font-size: 18px;
+    padding: 16px 10px;
+    font-size: 16px;
     color: var(--text-soft);
 }
 
@@ -773,8 +706,8 @@ a:hover {
     border-radius: var(--radius-md);
     border: 2px solid var(--border-strong);
     background: #ffffff;
-    padding: 10px 13px;
-    font-size: 20px;
+    padding: 8px 12px;
+    font-size: 18px;
     color: var(--text-main);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
@@ -787,7 +720,7 @@ a:hover {
 
 .admin-form__input:focus {
     border-color: #5bc0de;
-    box-shadow: 0 0 0 1px rgba(91, 192, 222, 0.5);
+    box-shadow: 0 0 0 1px rgba(91, 192, 222, 0.35);
     background: #ffffff;
 }
 
@@ -812,12 +745,12 @@ a:hover {
 }
 
 .admin-form__button {
-    min-width: 160px;
+    min-width: 140px;
     border-radius: var(--radius-pill);
     border: 2px solid transparent;
-    padding: 10px 18px;
-    font-size: 18px;
-    font-weight: 500;
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
     outline: none;
     display: inline-flex;
@@ -830,36 +763,19 @@ a:hover {
 }
 
 .admin-form__button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.admin-form__button:hover::before {
-    left: 100%;
+    content: none; /* ลดเอฟเฟกต์ shimmer */
 }
 
 .admin-form__button--primary {
     background: linear-gradient(to right, #5bc0de, #46b8da);
-    border-color: rgba(91, 192, 222, 0.8);
+    border-color: rgba(91, 192, 222, 0.6);
     color: #ffffff;
-    box-shadow: var(--shadow-medium);
+    box-shadow: var(--shadow-soft);
 }
 
 .admin-form__button--primary:hover {
-    background: linear-gradient(to right, #46b8da, #5bc0de);
-    transform: translateY(-2px);
-    box-shadow: var(--glow-primary);
-}
-
-.admin-form__button--primary:active {
-    transform: translateY(0);
-    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
 }
 
 .admin-form__button--ghost {
@@ -876,35 +792,6 @@ a:hover {
     opacity: 0.55;
     cursor: default;
     box-shadow: none;
-}
-
-.admin-table__name {
-    font-weight: 500;
-    margin-bottom: 2px;
-}
-
-.admin-link-edit {
-    display: inline-block;
-    font-size: 16px;
-    color: #5bc0de;
-    text-decoration: underline;
-    cursor: pointer;
-    position: relative;
-}
-
-.admin-link-edit::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: #46b8da;
-    transition: width 0.3s ease;
-}
-
-.admin-link-edit:hover::after {
-    width: 100%;
 }
 
 .admin-link-edit:hover {

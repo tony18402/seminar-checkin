@@ -17,6 +17,7 @@ type AdminPageProps = {
     status?: string; // all | checked | unchecked
     region?: string;
     organization?: string;
+    province?: string; // รองรับ province ใน query string
   }>;
 };
 
@@ -80,6 +81,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const status = sp.status ?? 'all';
   const regionFilter = (sp.region ?? '').trim();
   const organizationFilter = (sp.organization ?? '').trim().toLowerCase();
+  const provinceFilter = (sp.province ?? '').trim().toLowerCase(); // ✅ ตัวกรองจังหวัด (จาก query)
 
   const supabase = createServerClient();
 
@@ -139,6 +141,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     )
   ).sort((a, b) => a.localeCompare(b, 'th-TH'));
 
+  // ✅ ดึงรายการจังหวัดทั้งหมดจากข้อมูลจริง
+  const provinceOptions = Array.from(
+    new Set(
+      attendees
+        .map((a) => a.province ?? '')
+        .filter((p) => p.trim().length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b, 'th-TH'));
+
   let filtered = attendees;
 
   if (keyword) {
@@ -169,6 +180,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     if (!Number.isNaN(regionNumber)) {
       filtered = filtered.filter((a) => a.region === regionNumber);
     }
+  }
+
+  // ✅ กรองตามจังหวัด (ถ้ามีเลือก)
+  if (provinceFilter) {
+    filtered = filtered.filter((a) =>
+      (a.province ?? '').toLowerCase().includes(provinceFilter)
+    );
   }
 
   if (organizationFilter) {
@@ -251,6 +269,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <option value="7">ภาค 7</option>
                     <option value="8">ภาค 8</option>
                     <option value="9">ภาค 9</option>
+                  </select>
+                </div>
+
+                <div className="admin-filters__inline-group">
+                  <label className="admin-filters__label">จังหวัด</label>
+                  <select
+                    name="province"
+                    defaultValue={sp.province ?? ''}
+                    className="admin-filters__select"
+                  >
+                    <option value="">ทุกจังหวัด</option>
+                    {provinceOptions.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
