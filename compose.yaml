@@ -1,0 +1,6 @@
+services:
+  seminarcheckin:
+    image: seminarcheckin
+    build:
+      context: .
+      dockerfile: ./Dockerfile
