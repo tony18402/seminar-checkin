@@ -22,7 +22,7 @@ type DbAttendee = {
   qr_image_url: string | null;
   ticket_token: string | null;
   created_at: string | null;
-  coordinator_name: string | null; // 👈 เพิ่มบรรทัดนี้
+  coordinator_name: string | null;
 };
 
 // เดานามสกุลรูปจาก URL
@@ -60,16 +60,42 @@ function formatFoodType(foodType: string | null): string {
   }
 }
 
+// ตั้งคอลัมน์และ header ให้ชีตแต่ละภาค
+function setupSheetColumns(sheet: ExcelJS.Worksheet) {
+  sheet.columns = [
+    { header: 'ชื่อ-นามสกุล', key: 'full_name', width: 30 },
+    { header: 'เบอร์โทร', key: 'phone', width: 16 },
+    { header: 'หน่วยงาน', key: 'organization', width: 28 },
+    { header: 'ตำแหน่ง', key: 'job_position', width: 24 },
+    { header: 'จังหวัด', key: 'province', width: 18 },
+    { header: 'ภาค', key: 'region', width: 12 },
+    { header: 'ประเภทอาหาร', key: 'food_type', width: 18 },
+    { header: 'ชื่อผู้ประสานงาน', key: 'coordinator_name', width: 26 },
+    { header: 'โรงแรม', key: 'hotel_name', width: 24 },
+    { header: 'สถานะเช็กอิน', key: 'checkin_status', width: 16 },
+    { header: 'สลิป (รูป)', key: 'slip', width: 20 },
+    { header: 'รหัสบัตร', key: 'ticket_token', width: 26 },
+  ];
+
+  const headerRow = sheet.getRow(1);
+  headerRow.font = { bold: true };
+  headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  // ถ้าอยากให้หัวตารางค้างไว้ เวลาเลื่อนลง
+  sheet.views = [{ state: 'frozen', ySplit: 1 }];
+}
+
 export async function GET(req: NextRequest) {
   const supabase = createServerClient();
 
+  // ถ้า query มี ?region=3 จะ export เฉพาะภาค 3
   const regionParam = req.nextUrl.searchParams.get('region');
   const regionNumber = regionParam ? Number(regionParam) : Number.NaN;
-  const regionFilter = Number.isFinite(regionNumber) && regionNumber >= 1 && regionNumber <= 9
-    ? regionNumber
-    : null;
+  const regionFilter =
+    Number.isFinite(regionNumber) && regionNumber >= 1 && regionNumber <= 9
+      ? regionNumber
+      : null;
 
-  // ❌ ไม่ใส่ generic <DbAttendee> ที่ select แล้ว ให้ TS จัดการเอง
   const query = supabase
     .from('attendees')
     .select(
@@ -91,6 +117,7 @@ export async function GET(req: NextRequest) {
       coordinator_name
     `
     )
+    .order('region', { ascending: true, nullsFirst: false })
     .order('full_name', { ascending: true });
 
   if (regionFilter) {
@@ -100,39 +127,102 @@ export async function GET(req: NextRequest) {
   const { data, error } = await query;
 
   if (error || !data) {
+    console.error('export-attendees error:', error);
     return NextResponse.json(
       { success: false, message: 'โหลดข้อมูลไม่สำเร็จ', error },
       { status: 500 }
     );
   }
 
-  // ✅ cast ตรงนี้แทน ให้ data กลายเป็น DbAttendee[]
   const attendees = data as DbAttendee[];
 
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Attendees');
 
-  sheet.columns = [
-    { header: 'ชื่อ-นามสกุล', key: 'full_name', width: 30 },
-    { header: 'เบอร์โทร', key: 'phone', width: 16 },
-    { header: 'หน่วยงาน', key: 'organization', width: 28 },
-    { header: 'ตำแหน่ง', key: 'job_position', width: 24 },
-    { header: 'จังหวัด', key: 'province', width: 18 },
-    { header: 'ภาค', key: 'region', width: 12 },
-    { header: 'ประเภทอาหาร', key: 'food_type', width: 18 },
-    { header: 'ชื่อผู้ประสานงาน', key: 'coordinator_name', width: 26 },
-    { header: 'โรงแรม', key: 'hotel_name', width: 24 },
-    { header: 'สถานะเช็กอิน', key: 'checkin_status', width: 16 },
-    { header: 'สลิป (รูป)', key: 'slip', width: 20 },
-    { header: 'รหัสบัตร', key: 'ticket_token', width: 26 },
-  ];
+  // -------------------- โหมด 1: export เฉพาะภาคเดียว (มี ?region=) --------------------
+  if (regionFilter) {
+    const sheet = workbook.addWorksheet(`ภาค ${regionFilter}`);
+    setupSheetColumns(sheet);
 
-  const headerRow = sheet.getRow(1);
-  headerRow.font = { bold: true };
-  headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    for (const a of attendees) {
+      const row = sheet.addRow({
+        full_name: a.full_name ?? '',
+        phone: a.phone ?? '',
+        organization: a.organization ?? '',
+        job_position: a.job_position ?? '',
+        province: a.province ?? '',
+        region: a.region ?? '',
+        food_type: formatFoodType(a.food_type ?? null),
+        coordinator_name: a.coordinator_name ?? '',
+        hotel_name: a.hotel_name ?? '',
+        checkin_status: a.checked_in_at ? 'เช็กอินแล้ว' : 'ยังไม่เช็กอิน',
+        slip: '',
+        ticket_token: a.ticket_token ?? '',
+      });
+
+      const excelRow = row.number;
+
+      // ฝังรูปสลิป
+      if (a.slip_url) {
+        const ext = getImageExtension(a.slip_url);
+        if (ext) {
+          const imgBuffer = await fetchImageBuffer(a.slip_url);
+          if (imgBuffer) {
+            const imageId = workbook.addImage({
+              buffer: imgBuffer as any,
+              extension: ext,
+            });
+
+            sheet.addImage(imageId, {
+              tl: { col: 10.1, row: excelRow - 0.9 }, // คอลัมน์ที่ 11 (สลิป)
+              ext: { width: 90, height: 90 },
+            });
+
+            sheet.getRow(excelRow).height = 80;
+          }
+        }
+      }
+    }
+
+    const fileArrayBuffer = await workbook.xlsx.writeBuffer();
+    const filename = `attendees-region-${regionFilter}.xlsx`;
+
+    return new NextResponse(fileArrayBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
+    });
+  }
+
+  // -------------------- โหมด 2: export ทุกภาค แยกชีต --------------------
+  // เตรียมชีต ภาค 1 - ภาค 9 ล่วงหน้า
+  const regionSheets: Record<string, ExcelJS.Worksheet> = {};
+  for (let r = 1; r <= 9; r += 1) {
+    const sheet = workbook.addWorksheet(`ภาค ${r}`);
+    setupSheetColumns(sheet);
+    regionSheets[String(r)] = sheet;
+  }
+
+  // ชีต "ไม่ระบุภาค" กรณีมี region null หรืออยู่นอกช่วง 1-9
+  let otherSheet: ExcelJS.Worksheet | null = null;
+  const getOtherSheet = () => {
+    if (!otherSheet) {
+      otherSheet = workbook.addWorksheet('ไม่ระบุภาค');
+      setupSheetColumns(otherSheet);
+    }
+    return otherSheet;
+  };
 
   for (const a of attendees) {
-    const row = sheet.addRow({
+    const region = a.region ?? 0;
+    const key = region >= 1 && region <= 9 ? String(region) : 'other';
+
+    const targetSheet =
+      key === 'other' ? getOtherSheet() : regionSheets[key];
+
+    const row = targetSheet.addRow({
       full_name: a.full_name ?? '',
       phone: a.phone ?? '',
       organization: a.organization ?? '',
@@ -149,7 +239,7 @@ export async function GET(req: NextRequest) {
 
     const excelRow = row.number;
 
-    // -------- ฝังรูปสลิป (ถ้ามี) --------
+    // ฝังรูปสลิปในชีตนั้น ๆ
     if (a.slip_url) {
       const ext = getImageExtension(a.slip_url);
       if (ext) {
@@ -160,31 +250,26 @@ export async function GET(req: NextRequest) {
             extension: ext,
           });
 
-          sheet.addImage(imageId, {
-            tl: { col: 10.1, row: excelRow - 0.9 }, // คอลัมน์สลิป (คอลัมน์ที่ 11)
+          targetSheet.addImage(imageId, {
+            tl: { col: 10.1, row: excelRow - 0.9 }, // คอลัมน์สลิป
             ext: { width: 90, height: 90 },
           });
 
-          sheet.getRow(excelRow).height = 80;
+          targetSheet.getRow(excelRow).height = 80;
         }
       }
     }
-
-
   }
 
   const fileArrayBuffer = await workbook.xlsx.writeBuffer();
-
-  const fileSuffix = regionFilter ? `-region-${regionFilter}` : '';
-  const filename = `attendees${fileSuffix}.xlsx`;
+  const filename = 'attendees-by-region.xlsx';
 
   return new NextResponse(fileArrayBuffer, {
     status: 200,
     headers: {
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition':
-        `attachment; filename="${filename}"`,
+      'Content-Disposition': `attachment; filename="${filename}"`,
     },
   });
 }
