@@ -149,7 +149,7 @@ export default function RegisterPage() {
 
   // ✅ แยก state ของ "ตัวเลือกใน select" ออกจาก "ชื่อโรงแรมจริงที่ส่งไป backend"
   const [hotelSelect, setHotelSelect] = useState(''); // ค่าใน <select>
-  const [hotelOther, setHotelOther] = useState('');   // ข้อความโรงแรมอื่น ๆ ที่พิมพ์เอง
+  const [hotelOther, setHotelOther] = useState(''); // ข้อความโรงแรมอื่น ๆ ที่พิมพ์เอง
 
   const [participants, setParticipants] = useState<Participant[]>([
     {
@@ -173,11 +173,14 @@ export default function RegisterPage() {
   function handleParticipantChange(
     index: number,
     field: keyof Participant,
-    value: string
+    value: string,
   ) {
     setParticipants((prev) => {
       const copy = [...prev];
-      const updated: Participant = { ...copy[index], [field]: value } as Participant;
+      const updated: Participant = {
+        ...copy[index],
+        [field]: value,
+      } as Participant;
 
       // ✅ ถ้าเปลี่ยนประเภทอาหารเป็นอย่างอื่นที่ไม่ใช่ other ให้ล้างข้อความ foodOther ทิ้ง
       if (field === 'foodType' && value !== 'other') {
@@ -329,7 +332,7 @@ export default function RegisterPage() {
         try {
           data = await res.json();
         } catch {
-          // response body is empty or not JSON; keep data as null
+          // ignore
         }
 
         const errorMsg =
@@ -365,7 +368,7 @@ export default function RegisterPage() {
     } catch (err: any) {
       console.error(err);
       setErrorMessage(
-        err.message || 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
+        err.message || 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
       );
     } finally {
       setSubmitting(false);
@@ -374,252 +377,330 @@ export default function RegisterPage() {
 
   return (
     <main className="register-page">
-      <h1>แบบฟอร์มลงทะเบียนสัมมนา ศาลเยาวชนและครอบครัว</h1>
+      <div className="register-card">
+        <header className="register-header">
+          <h1>แบบฟอร์มลงทะเบียนสัมมนา ศาลเยาวชนและครอบครัว</h1>
+          <p>
+            สำหรับผู้พิพากษาหัวหน้าศาลฯ และผู้พิพากษาสมทบ
+            กรุณากรอกข้อมูลให้ครบถ้วนก่อนกดส่งแบบฟอร์ม
+          </p>
+        </header>
 
-      <form onSubmit={handleSubmit}>
-        {/* 1. ข้อมูลหน่วยงาน */}
-        <section>
-          <h2>1. ข้อมูลหน่วยงาน</h2>
+        <form className="register-form" onSubmit={handleSubmit}>
+          {/* 1. ข้อมูลหน่วยงาน */}
+          <section className="register-section">
+            <h2 className="register-section__title">1. ข้อมูลหน่วยงาน</h2>
 
-          <div>
-            <label htmlFor="region">สังกัดภาค / ศาลกลาง *</label>
-            <select
-              id="region"
-              value={region}
-              onChange={handleRegionChange}
-              required
-            >
-              <option value="">-- เลือกสังกัดภาค / ศาลกลาง --</option>
-              <option value="0">ศาลเยาวชนและครอบครัวกลาง</option>
-              <option value="1">1 (กรุงเทพฯ และจังหวัดในภาคกลาง)</option>
-              <option value="2">2 (จังหวัดในภาคตะวันออก)</option>
-              <option value="3">3 (จังหวัดในภาคอีสานตอนล่าง)</option>
-              <option value="4">4 (จังหวัดในภาคอีสานตอนบน)</option>
-              <option value="5">5 (จังหวัดในภาคเหนือ)</option>
-              <option value="6">6 (จังหวัดในภาคกลางตอนบน)</option>
-              <option value="7">7 (จังหวัดในภาคตะวันตก)</option>
-              <option value="8">8 (จังหวัดในภาคใต้ตอนบน)</option>
-              <option value="9">9 (จังหวัดในภาคใต้ตอนล่าง)</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="organization">ชื่อหน่วยงาน / ศาล *</label>
-            <select
-              id="organization"
-              value={organization}
-              onChange={handleOrganizationChange}
-              required
-              disabled={!region || currentOrganizations.length === 0}
-            >
-              <option value="">
-                {region
-                  ? '-- เลือกศาลเยาวชนและครอบครัว / แผนกฯ --'
-                  : 'กรุณาเลือกสังกัดภาค / ศาลกลางก่อน'}
-              </option>
-              {currentOrganizations.map((org) => (
-                <option key={org} value={org}>
-                  {org}
+            <div className="register-field">
+              <label htmlFor="region" className="register-label">
+                สังกัดภาค / ศาลกลาง *
+              </label>
+              <select
+                id="region"
+                className="register-select"
+                value={region}
+                onChange={handleRegionChange}
+                required
+              >
+                <option value="">-- เลือกสังกัดภาค / ศาลกลาง --</option>
+                <option value="0">ศาลเยาวชนและครอบครัวกลาง</option>
+                <option value="1">
+                  1 (กรุงเทพฯ และจังหวัดในภาคกลาง)
                 </option>
-              ))}
-            </select>
-          </div>
+                <option value="2">2 (จังหวัดในภาคตะวันออก)</option>
+                <option value="3">3 (จังหวัดในภาคอีสานตอนล่าง)</option>
+                <option value="4">4 (จังหวัดในภาคอีสานตอนบน)</option>
+                <option value="5">5 (จังหวัดในภาคเหนือ)</option>
+                <option value="6">6 (จังหวัดในภาคกลางตอนบน)</option>
+                <option value="7">7 (จังหวัดในภาคตะวันตก)</option>
+                <option value="8">8 (จังหวัดในภาคใต้ตอนบน)</option>
+                <option value="9">9 (จังหวัดในภาคใต้ตอนล่าง)</option>
+              </select>
+            </div>
 
-          <div>
-            <label htmlFor="province">จังหวัด *</label>
-            <input
-              id="province"
-              type="text"
-              value={province}
-              onChange={(e) => setProvince(e.target.value)} // ✅ แก้ไขได้เอง
-              required
-            />
-          </div>
+            <div className="register-field">
+              <label htmlFor="organization" className="register-label">
+                ชื่อหน่วยงาน / ศาล *
+              </label>
+              <select
+                id="organization"
+                className="register-select"
+                value={organization}
+                onChange={handleOrganizationChange}
+                required
+                disabled={!region || currentOrganizations.length === 0}
+              >
+                <option value="">
+                  {region
+                    ? '-- เลือกศาลเยาวชนและครอบครัว / แผนกฯ --'
+                    : 'กรุณาเลือกสังกัดภาค / ศาลกลางก่อน'}
+                </option>
+                {currentOrganizations.map((org) => (
+                  <option key={org} value={org}>
+                    {org}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div>
-            <label htmlFor="coordinatorName">ชื่อ-สกุลผู้ประสานงาน *</label>
-            <input
-              id="coordinatorName"
-              type="text"
-              value={coordinatorName}
-              onChange={(e) => setCoordinatorName(e.target.value)}
-              placeholder="เช่น นางสาวกานดา ตัวอย่างดี"
-              required
-            />
-          </div>
-        </section>
+            <div className="register-field">
+              <label htmlFor="province" className="register-label">
+                จังหวัด *
+              </label>
+              <input
+                id="province"
+                type="text"
+                className="register-input"
+                value={province}
+                onChange={(e) => setProvince(e.target.value)}
+                required
+              />
+            </div>
 
-        {/* 2. ผู้เข้าร่วมสัมมนาฯ */}
-        <section>
-          <h2>2. ผู้เข้าร่วมสัมมนาฯ</h2>
+            <div className="register-field">
+              <label
+                htmlFor="coordinatorName"
+                className="register-label"
+              >
+                ชื่อ-สกุลผู้ประสานงาน *
+              </label>
+              <input
+                id="coordinatorName"
+                type="text"
+                className="register-input"
+                value={coordinatorName}
+                onChange={(e) => setCoordinatorName(e.target.value)}
+                placeholder="เช่น นางสาวกานดา ตัวอย่างดี"
+                required
+              />
+            </div>
+          </section>
 
-          {participants.map((p, index) => (
-            <fieldset key={index}>
-              <legend>ผู้เข้าร่วมคนที่ {index + 1}</legend>
+          {/* 2. ผู้เข้าร่วมสัมมนาฯ */}
+          <section className="register-section">
+            <h2 className="register-section__title">
+              2. ผู้เข้าร่วมสัมมนาฯ
+            </h2>
 
-              <div>
-                <label>ชื่อ - สกุล *</label>
-                <input
-                  type="text"
-                  value={p.fullName}
-                  onChange={(e) =>
-                    handleParticipantChange(index, 'fullName', e.target.value)
-                  }
-                  required={index === 0}
-                />
-              </div>
+            {participants.map((p, index) => (
+              <fieldset key={index}>
+                <legend>ผู้เข้าร่วมคนที่ {index + 1}</legend>
 
-              <div>
-                <label>ตำแหน่ง *</label>
-                <select
-                  value={p.position}
-                  onChange={(e) =>
-                    handleParticipantChange(
-                      index,
-                      'position',
-                      e.target.value as PositionType
-                    )
-                  }
-                  required
-                >
-                  <option value="chief_judge">ผู้พิพากษาหัวหน้าศาลฯ</option>
-                  <option value="associate_judge">ผู้พิพากษาสมทบ</option>
-                </select>
-              </div>
-
-              <div>
-                <label>เบอร์โทรศัพท์</label>
-                <input
-                  type="tel"
-                  value={p.phone}
-                  onChange={(e) =>
-                    handleParticipantChange(index, 'phone', e.target.value)
-                  }
-                />
-              </div>
-
-              <div>
-                <label>ประเภทอาหาร</label>
-                <select
-                  value={p.foodType}
-                  onChange={(e) =>
-                    handleParticipantChange(
-                      index,
-                      'foodType',
-                      e.target.value as FoodType
-                    )
-                  }
-                >
-                  <option value="normal">ทั่วไป</option>
-                  <option value="vegetarian">มังสวิรัติ</option>
-                  <option value="halal">อิสลาม</option>
-                  <option value="other">อื่น ๆ (ระบุ)</option>
-                </select>
-              </div>
-
-              {/* ✅ ถ้าเลือก "อื่น ๆ" ให้แสดงช่องกรอกรายละเอียด */}
-              {p.foodType === 'other' && (
-                <div>
-                  <label>ระบุอาหารอื่น ๆ</label>
+                <div className="register-field">
+                  <label className="register-label">ชื่อ - สกุล *</label>
                   <input
                     type="text"
-                    value={p.foodOther ?? ''}
+                    className="register-input"
+                    value={p.fullName}
                     onChange={(e) =>
                       handleParticipantChange(
                         index,
-                        'foodOther',
-                        e.target.value
+                        'fullName',
+                        e.target.value,
                       )
                     }
-                    placeholder="เช่น ไม่ทานเนื้อวัว, แพ้ไข่, แพ้ถั่ว ฯลฯ"
+                    required={index === 0}
                   />
                 </div>
-              )}
 
-              {participants.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveParticipant(index)}
-                >
-                  ลบผู้เข้าร่วมคนที่ {index + 1}
-                </button>
-              )}
-            </fieldset>
-          ))}
+                <div className="register-field">
+                  <label className="register-label">ตำแหน่ง *</label>
+                  <select
+                    className="register-select"
+                    value={p.position}
+                    onChange={(e) =>
+                      handleParticipantChange(
+                        index,
+                        'position',
+                        e.target.value as PositionType,
+                      )
+                    }
+                    required
+                  >
+                    <option value="chief_judge">
+                      ผู้พิพากษาหัวหน้าศาลฯ
+                    </option>
+                    <option value="associate_judge">
+                      ผู้พิพากษาสมทบ
+                    </option>
+                  </select>
+                </div>
 
-          <div>
-            <button type="button" onClick={handleAddParticipant}>
+                <div className="register-field">
+                  <label className="register-label">เบอร์โทรศัพท์</label>
+                  <input
+                    type="tel"
+                    className="register-input"
+                    value={p.phone}
+                    onChange={(e) =>
+                      handleParticipantChange(
+                        index,
+                        'phone',
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="register-field">
+                  <label className="register-label">ประเภทอาหาร</label>
+                  <select
+                    className="register-select"
+                    value={p.foodType}
+                    onChange={(e) =>
+                      handleParticipantChange(
+                        index,
+                        'foodType',
+                        e.target.value as FoodType,
+                      )
+                    }
+                  >
+                    <option value="normal">ทั่วไป</option>
+                    <option value="vegetarian">มังสวิรัติ</option>
+                    <option value="halal">อิสลาม</option>
+                    <option value="other">อื่น ๆ (ระบุ)</option>
+                  </select>
+                </div>
+
+                {p.foodType === 'other' && (
+                  <div className="register-field">
+                    <label className="register-label">
+                      ระบุอาหารอื่น ๆ
+                    </label>
+                    <input
+                      type="text"
+                      className="register-input"
+                      value={p.foodOther ?? ''}
+                      onChange={(e) =>
+                        handleParticipantChange(
+                          index,
+                          'foodOther',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="เช่น ไม่ทานเนื้อวัว, แพ้ไข่, แพ้ถั่ว ฯลฯ"
+                    />
+                  </div>
+                )}
+
+                {participants.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveParticipant(index)}
+                  >
+                    ลบผู้เข้าร่วมคนที่ {index + 1}
+                  </button>
+                )}
+              </fieldset>
+            ))}
+
+            <button
+              type="button"
+              onClick={handleAddParticipant}
+            >
               + เพิ่มผู้เข้าร่วม
             </button>
-          </div>
 
-          <div>
-            <label>รวมผู้เข้าร่วมทั้งหมด</label>
-            <input type="number" value={totalAttendees} readOnly />
-          </div>
-        </section>
-
-        {/* 3. หลักฐานค่าลงทะเบียน */}
-        <section>
-          <h2>3. หลักฐานค่าลงทะเบียน</h2>
-          <div>
-            <label htmlFor="slip">แนบไฟล์ *</label>
-            <input
-              id="slip"
-              type="file"
-              accept="image/*,application/pdf"
-              onChange={handleSlipChange}
-              required
-            />
-          </div>
-        </section>
-
-        {/* 4. โรงแรมที่พัก */}
-        <section>
-          <h2>4. ข้อมูลเพิ่มเติม</h2>
-          <div>
-            <label htmlFor="hotelName">พักโรงแรมไหน *</label>
-            <select
-              id="hotelName"
-              value={hotelSelect}
-              onChange={handleHotelSelectChange}
-              required
-            >
-              <option value="">
-                -- เลือกโรงแรม --
-              </option>
-              {SURAT_CITY_HOTELS.map((hotel) => (
-                <option key={hotel} value={hotel}>
-                  {hotel}
-                </option>
-              ))}
-              {/* ✅ ตัวเลือกอื่น ๆ */}
-              <option value="__other">อื่น ๆ (ระบุชื่อโรงแรม)</option>
-            </select>
-          </div>
-
-          {/* ✅ แสดงช่องกรอกชื่อโรงแรมเมื่อเลือก "อื่น ๆ" */}
-          {hotelSelect === '__other' && (
-            <div>
-              <label htmlFor="hotelOther">ชื่อโรงแรม (กรณีอื่น ๆ)</label>
+            <div className="register-field">
+              <label className="register-label">
+                รวมผู้เข้าร่วมทั้งหมด
+              </label>
               <input
-                id="hotelOther"
-                type="text"
-                value={hotelOther}
-                onChange={(e) => setHotelOther(e.target.value)}
-                placeholder="ระบุชื่อโรงแรมที่พัก"
+                type="number"
+                className="register-input"
+                value={totalAttendees}
+                readOnly
               />
             </div>
+          </section>
+
+          {/* 3. หลักฐานค่าลงทะเบียน */}
+          <section className="register-section">
+            <h2 className="register-section__title">
+              3. หลักฐานค่าลงทะเบียน
+            </h2>
+            <div className="register-field">
+              <label htmlFor="slip" className="register-label">
+                แนบไฟล์ *
+              </label>
+              <input
+                id="slip"
+                type="file"
+                className="register-input"
+                accept="image/*,application/pdf"
+                onChange={handleSlipChange}
+                required
+              />
+              <p className="register-help">
+                รองรับไฟล์ภาพ (JPG, PNG) หรือไฟล์ PDF
+              </p>
+            </div>
+          </section>
+
+          {/* 4. โรงแรมที่พัก */}
+          <section className="register-section">
+            <h2 className="register-section__title">4. ข้อมูลเพิ่มเติม</h2>
+            <div className="register-field">
+              <label htmlFor="hotelName" className="register-label">
+                พักโรงแรมไหน *
+              </label>
+              <select
+                id="hotelName"
+                className="register-select"
+                value={hotelSelect}
+                onChange={handleHotelSelectChange}
+                required
+              >
+                <option value="">-- เลือกโรงแรม --</option>
+                {SURAT_CITY_HOTELS.map((hotel) => (
+                  <option key={hotel} value={hotel}>
+                    {hotel}
+                  </option>
+                ))}
+                <option value="__other">อื่น ๆ (ระบุชื่อโรงแรม)</option>
+              </select>
+            </div>
+
+            {hotelSelect === '__other' && (
+              <div className="register-field">
+                <label
+                  htmlFor="hotelOther"
+                  className="register-label"
+                >
+                  ชื่อโรงแรม (กรณีอื่น ๆ)
+                </label>
+                <input
+                  id="hotelOther"
+                  type="text"
+                  className="register-input"
+                  value={hotelOther}
+                  onChange={(e) => setHotelOther(e.target.value)}
+                  placeholder="ระบุชื่อโรงแรมที่พัก"
+                />
+              </div>
+            )}
+          </section>
+
+          {successMessage && (
+            <p className="register-note">{successMessage}</p>
           )}
-        </section>
+          {errorMessage && (
+            <p className="register-error">{errorMessage}</p>
+          )}
 
-        {successMessage && <p>{successMessage}</p>}
-        {errorMessage && <p>{errorMessage}</p>}
-
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'กำลังบันทึก...' : 'ส่งแบบฟอร์มลงทะเบียน'}
-        </button>
-      </form>
+          <div className="register-actions">
+            <button
+              type="submit"
+              className="register-button"
+              disabled={submitting}
+            >
+              {submitting
+                ? 'กำลังบันทึก...'
+                : 'ส่งแบบฟอร์มลงทะเบียน'}
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }

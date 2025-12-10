@@ -1,50 +1,79 @@
-/* สไตล์เฉพาะหน้า Register (โทนเดียวกับ admin/attendee) */
+/* --------------------------------------------------
+   Register Page – Desktop Friendly
+   -------------------------------------------------- */
 
 .register-page {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  padding: 16px 14px 24px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 24px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f5f5f0 0%, #e8e4d9 50%, #ddd4c0 100%);
+  background: radial-gradient(circle at top left, #fdfaf4 0%, #f1e6d6 40%, #e0d3c1 100%);
   color: #3b2f2f;
+  box-sizing: border-box;
 }
 
+/* กล่องหลักของฟอร์ม */
+.register-card {
+  width: 100%;
+  max-width: 1120px;        /* เหมาะกับจอ Desktop */
+  margin: 0 auto;
+  border-radius: 24px;
+  padding: 24px 24px 28px;
+  background: #ffffff;
+  border: 1px solid rgba(139, 92, 56, 0.3);
+  box-shadow: 0 14px 38px rgba(139, 92, 56, 0.18);
+}
+
+/* หัวข้อใหญ่ */
 .register-header {
-  text-align: center;
-  margin-bottom: 16px;
+  text-align: left;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(139, 92, 56, 0.2);
+  padding-bottom: 14px;
 }
 
 .register-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .register-header p {
-  font-size: 1rem;
+  margin-top: 6px;
+  font-size: 0.98rem;
   color: #6b5d54;
 }
 
-.register-card {
-  margin: 0;
-  width: 100%;
-  border-radius: 20px;
-  padding: 18px 16px 16px;
-  background: #ffffff;
-  border: 1px solid rgba(139, 92, 56, 0.3);
-  box-shadow: 0 8px 24px rgba(139, 92, 56, 0.15);
-}
-
+/* ฟอร์มรวม */
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
+/* กล่องย่อยแต่ละหัวข้อ (1,2,3,4) */
+.register-section {
+  border-radius: 18px;
+  padding: 16px 16px 18px;
+  background: #faf7f2;
+  border: 1px solid rgba(139, 92, 56, 0.18);
+}
+
+.register-section__title {
+  font-size: 1.1rem;
+  font-weight: 650;
+  margin: 0 0 10px;
+  color: #3b2f2f;
+}
+
+/* ฟิลด์ทั่วไป */
 .register-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-bottom: 10px;
 }
 
 .register-label {
@@ -56,60 +85,163 @@
 .register-input,
 .register-select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 9px 11px;
   border-radius: 12px;
   border: 1px solid rgba(139, 92, 56, 0.35);
-  font-size: 1rem;
+  font-size: 0.98rem;
   background: #fff;
+  box-sizing: border-box;
 }
 
 .register-input:focus,
 .register-select:focus {
   outline: none;
   border-color: #5cb85c;
-  box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.25);
+  box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.22);
 }
 
+/* fieldset ผู้เข้าร่วม */
+.register-section fieldset {
+  border: 1px dashed rgba(139, 92, 56, 0.35);
+  border-radius: 14px;
+  padding: 10px 12px 12px;
+  margin: 8px 0 12px;
+}
+
+.register-section fieldset legend {
+  padding: 0 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4b3727;
+}
+
+/* helper & error */
 .register-help {
   font-size: 0.9rem;
   color: #6b5d54;
 }
 
 .register-error {
-  font-size: 0.9rem;
-  color: #8a6d3b;
-}
-
-.register-actions {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.register-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 11px 14px;
-  border-radius: 999px;
-  border: none;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(135deg, #5cb85c, #449d44);
-  color: #ffffff;
-}
-
-.register-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  font-size: 0.92rem;
+  color: #8a2f2f;
+  margin-top: 6px;
 }
 
 .register-note {
   font-size: 0.9rem;
   color: #6b5d54;
   text-align: center;
+  margin-top: 4px;
 }
 
-/* ให้ใช้เต็มจอทั้งกว้างและสูง ไม่บีบการ์ด */
+/* ปุ่มส่ง / ปุ่มอื่น ๆ */
+.register-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.register-button,
+.register-section button[type="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #5cb85c, #449d44);
+  color: #ffffff;
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out,
+    background 0.15s ease-out;
+}
+
+.register-section button[type="button"] {
+  background: linear-gradient(135deg, #f0ad4e, #ec971f);
+  margin-top: 4px;
+}
+
+.register-button:hover,
+.register-section button[type="button"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+}
+
+.register-button:active,
+.register-section button[type="button"]:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.register-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------------- Desktop Layout ---------------- */
+
+@media (min-width: 960px) {
+  .register-page {
+    padding: 40px 48px;
+  }
+
+  .register-card {
+    padding: 28px 32px 32px;
+  }
+
+  /* section ข้อมูลหน่วยงาน + โรงแรม จัด 2 คอลัมน์เบา ๆ */
+  .register-section:nth-child(1) .register-field,
+  .register-section:nth-child(4) .register-field {
+    max-width: 520px;
+  }
+
+  /* fieldset ผู้เข้าร่วม: จัด 2 คอลัมน์ในคอม */
+  .register-section fieldset {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+    row-gap: 8px;
+  }
+
+  .register-section fieldset legend {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+  }
+
+  .register-section fieldset .register-field {
+    margin-bottom: 6px;
+  }
+
+  /* บรรทัดรวมผู้เข้าร่วมให้แคบหน่อย */
+  .register-section input[readonly] {
+    max-width: 160px;
+  }
+}
+
+/* ---------------- Tablet / มือถือ ---------------- */
+
+@media (max-width: 768px) {
+  .register-page {
+    padding: 16px 12px 20px;
+  }
+
+  .register-card {
+    padding: 18px 14px 20px;
+    border-radius: 18px;
+  }
+
+  .register-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .register-section {
+    padding: 12px 10px 14px;
+  }
+
+  .register-section fieldset {
+    display: block;
+  }
+}
