@@ -25,19 +25,21 @@ type AdminPageProps = {
 
 type AttendeeRow = {
   id: string;
-  event_id: string | null;       // ✅ event_id
+  event_id: string | null; // event_id
   full_name: string | null;
   phone: string | null;
   organization: string | null;
-  job_position: string | null;   // ✅ ตำแหน่ง
-  province: string | null;       // ✅ จังหวัด
-  region: number | null;         // ✅ ภาค 0–9 (0 = ศาลกลาง)
-  qr_image_url: string | null;   // ✅ URL รูป QR
+  job_position: string | null; // ตำแหน่ง
+  province: string | null; // จังหวัด
+  region: number | null; // ภาค 0–9 (0 = ศาลกลาง)
+  qr_image_url: string | null; // URL รูป QR
   slip_url: string | null;
   checked_in_at: string | null;
   ticket_token: string | null;
-  food_type: string | null;      // ✅ ประเภทอาหาร
-  hotel_name: string | null;     // ✅ ชื่อโรงแรม
+  food_type: string | null; // ประเภทอาหาร
+  hotel_name: string | null; // ชื่อโรงแรม
+  coordinator_name: string | null; // ✅ ชื่อผู้ประสานงาน
+  coordinator_phone: string | null; // ✅ เบอร์ผู้ประสานงาน
 };
 
 function formatDateTime(isoString: string | null) {
@@ -77,15 +79,14 @@ function formatFoodType(foodType: string | null): string {
   }
 }
 
-// ✅ แสดง label สำหรับ region (รองรับ 0 = ศาลกลาง)
+// แสดง label สำหรับ region (รองรับ 0 = ศาลกลาง)
 function formatRegion(region: number | null): string {
   if (region === null || Number.isNaN(region as any)) return '-';
 
   if (region === 0) {
-    return 'ศาลเยาวชนกลาง ';
+    return 'ศาลเยาวชนและครอบครัวกลาง';
   }
 
-  // ถ้าอยากละเอียดกว่านี้ สามารถ map ตามภาคได้ภายหลัง
   return `ภาค ${region}`;
 }
 
@@ -95,7 +96,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const status = sp.status ?? 'all';
   const regionFilter = (sp.region ?? '').trim();
   const organizationFilter = (sp.organization ?? '').trim().toLowerCase();
-  const provinceFilter = (sp.province ?? '').trim().toLowerCase(); // ✅ ตัวกรองจังหวัด (จาก query)
+  const provinceFilter = (sp.province ?? '').trim().toLowerCase(); // ตัวกรองจังหวัด (จาก query)
 
   const supabase = createServerClient();
 
@@ -116,8 +117,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       checked_in_at,
       ticket_token,
       food_type,
-      hotel_name
-    `
+      hotel_name,
+      coordinator_name,
+      coordinator_phone
+    `,
     )
     .order('region', { ascending: true, nullsFirst: false })
     .order('full_name', { ascending: true });
@@ -147,22 +150,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const totalChecked = attendees.filter((a) => a.checked_in_at).length;
   const totalWithSlip = attendees.filter((a) => a.slip_url).length;
 
-  // ดึงรายการศาล / หน่วยงานทั้งหมดจากข้อมูลจริง สำหรับทำ dropdown เลือก
+  // รายการศาล / หน่วยงานทั้งหมดจากข้อมูลจริง สำหรับทำ dropdown เลือก
   const organizationOptions = Array.from(
     new Set(
       attendees
         .map((a) => a.organization ?? '')
-        .filter((org) => org.trim().length > 0)
-    )
+        .filter((org) => org.trim().length > 0),
+    ),
   ).sort((a, b) => a.localeCompare(b, 'th-TH'));
 
-  // ✅ ดึงรายการจังหวัดทั้งหมดจากข้อมูลจริง
+  // รายการจังหวัดทั้งหมดจากข้อมูลจริง
   const provinceOptions = Array.from(
     new Set(
       attendees
         .map((a) => a.province ?? '')
-        .filter((p) => p.trim().length > 0)
-    )
+        .filter((p) => p.trim().length > 0),
+    ),
   ).sort((a, b) => a.localeCompare(b, 'th-TH'));
 
   let filtered = attendees;
@@ -174,12 +177,16 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       const job = (a.job_position ?? '').toLowerCase();
       const province = (a.province ?? '').toLowerCase();
       const token = (a.ticket_token ?? '').toLowerCase();
+      const coordName = (a.coordinator_name ?? '').toLowerCase();
+      const coordPhone = (a.coordinator_phone ?? '').toLowerCase();
       return (
         name.includes(keyword) ||
         org.includes(keyword) ||
         job.includes(keyword) ||
         province.includes(keyword) ||
-        token.includes(keyword)
+        token.includes(keyword) ||
+        coordName.includes(keyword) ||
+        coordPhone.includes(keyword)
       );
     });
   }
@@ -193,20 +200,20 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   if (regionFilter) {
     const target = regionFilter.trim();
     filtered = filtered.filter(
-      (a) => String(a.region ?? '').trim() === target
+      (a) => String(a.region ?? '').trim() === target,
     );
   }
 
-  // ✅ กรองตามจังหวัด (ถ้ามีเลือก)
+  // กรองตามจังหวัด (ถ้ามีเลือก)
   if (provinceFilter) {
     filtered = filtered.filter((a) =>
-      (a.province ?? '').toLowerCase().includes(provinceFilter)
+      (a.province ?? '').toLowerCase().includes(provinceFilter),
     );
   }
 
   if (organizationFilter) {
     filtered = filtered.filter((a) =>
-      (a.organization ?? '').toLowerCase().includes(organizationFilter)
+      (a.organization ?? '').toLowerCase().includes(organizationFilter),
     );
   }
 
@@ -224,7 +231,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 สรุปรายชื่อผู้เข้าร่วมงานสัมมนา
               </h1>
               <p className="admin-header__subtitle">
-                หน้านี้สำหรับเจ้าหน้าที่ใช้ตรวจสอบสถานะการแนบสลิป การเช็กอิน และประเภทอาหารของผู้เข้าร่วม
+                หน้านี้สำหรับเจ้าหน้าที่ใช้ตรวจสอบสถานะการแนบสลิป การเช็กอิน
+                ประเภทอาหาร และข้อมูลผู้ประสานงานของผู้เข้าร่วม
               </p>
             </div>
           </div>
@@ -277,11 +285,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <th>ภาค / ศาลกลาง</th>
                   <th>เบอร์โทร</th>
                   <th>ตำแหน่ง</th>
+                  <th>ชื่อผู้ประสานงาน</th>
+                  <th>เบอร์ผู้ประสานงาน</th>
                   <th>โรงแรม</th>
                   <th>สลิป</th>
                   <th>เช็กอิน</th>
                   <th>ประเภทอาหาร</th>
-                  <th>Token</th>
+                  <th>รหัสบัตร</th>
                   <th>จัดการ</th>
                 </tr>
               </thead>
@@ -289,7 +299,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={13} className="admin-table__empty">
+                    <td colSpan={15} className="admin-table__empty">
                       ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา
                     </td>
                   </tr>
@@ -308,6 +318,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         <td>{formatRegion(a.region)}</td>
                         <td>{a.phone || '-'}</td>
                         <td>{a.job_position || '-'}</td>
+                        <td>{a.coordinator_name || '-'}</td>
+                        <td>{a.coordinator_phone || '-'}</td>
                         <td>{a.hotel_name || '-'}</td>
                         <td>
                           {hasSlip ? (

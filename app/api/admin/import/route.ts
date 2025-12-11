@@ -6,15 +6,8 @@ import { createServerClient } from '@/lib/supabaseServer';
 // raw row จาก Excel
 type RawExcelRow = { [key: string]: any };
 
-// ให้ตรง constraint ใน DB
-type FoodType =
-  | 'normal'
-  | 'no_pork'
-  | 'vegetarian'
-  | 'vegan'
-  | 'halal'
-  | 'seafood_allergy'
-  | 'other';
+// ให้ตรง constraint ใน DB (เหลือ 3 แบบ)
+type FoodType = 'normal' | 'vegetarian' | 'halal';
 
 // row ที่เตรียมแล้วสำหรับใส่ใน attendees
 type PreparedRow = {
@@ -25,14 +18,15 @@ type PreparedRow = {
   organization: string | null;
   job_position: string | null;
   province: string | null;
-  region: number | null;           // ✅ รองรับ 0–9 (0 = ศาลกลาง)
+  region: number | null; // 0–9 (0 = ศาลกลาง)
   qr_image_url: string | null;
   food_type: FoodType | null;
   coordinator_name: string | null;
+  coordinator_phone: string | null;
   hotel_name: string | null;
 };
 
-// แปลงค่าจาก Excel → food_type ที่ใช้ใน DB
+// แปลงค่าจาก Excel → food_type ที่ใช้ใน DB (3 ค่า)
 function normalizeFoodType(value: any): FoodType | null {
   if (value == null) return null;
 
@@ -44,49 +38,27 @@ function normalizeFoodType(value: any): FoodType | null {
     case 'normal':
     case 'ทั่วไป':
     case 'อาหารทั่วไป':
+    case 'ปกติ':
       return 'normal';
-
-    // ไม่ทานหมู
-    case 'no_pork':
-    case 'no pork':
-    case 'ไม่ทานหมู':
-    case 'ไม่กินหมู':
-    case 'งดหมู':
-      return 'no_pork';
 
     // มังสวิรัติ
     case 'vegetarian':
     case 'มังสวิรัติ':
     case 'มังสะวิรัติ':
+    case 'มังฯ':
       return 'vegetarian';
 
-    // เจ / วีแกน
-    case 'vegan':
-    case 'วีแกน':
-    case 'เจ':
-    case 'เจ / วีแกน':
-      return 'vegan';
-
-    // ฮาลาล
+    // ฮาลาล / อิสลาม
     case 'halal':
     case 'ฮาลาล':
+    case 'อิสลาม':
+    case 'อาหารอิสลาม':
+    case 'มุสลิม':
       return 'halal';
 
-    // แพ้อาหารทะเล
-    case 'seafood_allergy':
-    case 'seafood':
-    case 'แพ้อาหารทะเล':
-      return 'seafood_allergy';
-
-    // อื่น ๆ
-    case 'other':
-    case 'อื่น':
-    case 'อื่น ๆ':
-      return 'other';
-
     default:
-      // ถ้าไม่รู้จัก ให้จัดเป็น 'other' แทนจะได้ไม่ชน constraint
-      return 'other';
+      // ถ้าไม่รู้จัก แต่มีค่ามา → ให้ลงเป็นอาหารทั่วไป จะได้ไม่ชน constraint
+      return 'normal';
   }
 }
 
@@ -104,7 +76,7 @@ export async function POST(req: NextRequest) {
           ok: false,
           message: 'ไม่พบไฟล์ที่อัปโหลด หรือรูปแบบไม่ถูกต้อง',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -112,42 +84,63 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(arrayBuffer);
-    const worksheet = workbook.getWorksheet(1);
 
-    if (!worksheet) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: 'ไฟล์ Excel ไม่มี sheet ใดเลย',
-        },
-        { status: 400 }
+    // 🔹 อ่านทุกชีตในไฟล์ ไม่ใช่แค่ชีตที่ 1
+    const rows: RawExcelRow[] = [];
+
+    for (const worksheet of workbook.worksheets) {
+      if (!worksheet) continue;
+      const sheetName = worksheet.name;
+      console.log('[IMPORT] reading sheet:', sheetName);
+
+      const headers: string[] = [];
+
+      // header row (แถวที่ 1 ของชีตนั้น)
+      const headerRow = worksheet.getRow(1);
+      if (!headerRow || headerRow.cellCount === 0) {
+        console.log('[IMPORT] sheet has empty header, skip:', sheetName);
+        continue;
+      }
+
+      headerRow.eachCell((cell, colNum) => {
+        headers[colNum - 1] = String(cell.value || '').trim();
+      });
+
+      let sheetRowCount = 0;
+
+      worksheet.eachRow((row, rowNum) => {
+        if (rowNum === 1) return; // ข้าม header ในชีตนั้น
+
+        const obj: RawExcelRow = {};
+        row.eachCell((cell, colNum) => {
+          const header = headers[colNum - 1];
+          if (header) {
+            obj[header] = cell.value ?? null;
+          }
+        });
+
+        if (Object.keys(obj).length > 0) {
+          rows.push(obj);
+          sheetRowCount += 1;
+        }
+      });
+
+      console.log(
+        `[IMPORT] sheet "${sheetName}" → ${sheetRowCount} data rows`,
       );
     }
 
-    // อ่านแถวข้อมูล
-    const rows: RawExcelRow[] = [];
-    const headers: string[] = [];
-
-    // อ่านส่วนหัว
-    const headerRow = worksheet.getRow(1);
-    headerRow?.eachCell((cell, colNum) => {
-      headers[colNum - 1] = String(cell.value || '').trim();
-    });
-
-    // อ่านข้อมูล
-    worksheet.eachRow((row, rowNum) => {
-      if (rowNum === 1) return; // ข้าม header
-      const obj: RawExcelRow = {};
-      row.eachCell((cell, colNum) => {
-        const header = headers[colNum - 1];
-        if (header) {
-          obj[header] = cell.value ?? null;
-        }
-      });
-      if (Object.keys(obj).length > 0) {
-        rows.push(obj);
-      }
-    });
+    // ถ้าทุกชีตว่างจริง ๆ
+    if (rows.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            'ไม่พบข้อมูลในไฟล์ Excel (ทุกชีตไม่มีข้อมูล แถวข้อมูล หรือ header ไม่ถูกต้อง)',
+        },
+        { status: 400 },
+      );
+    }
 
     // 3) map จาก Excel → โครงสร้าง attendees (ตาม schema ใหม่)
     const prepared: PreparedRow[] = rows
@@ -191,16 +184,10 @@ export async function POST(req: NextRequest) {
           null;
 
         const province =
-          row.province ??
-          row['province'] ??
-          row['จังหวัด'] ??
-          null;
+          row.province ?? row['province'] ?? row['จังหวัด'] ?? null;
 
         const region_raw =
-          row.region ??
-          row['ภาค'] ??
-          row['สังกัดภาค'] ??
-          null;
+          row.region ?? row['ภาค'] ?? row['สังกัดภาค'] ?? null;
 
         const qr_image_url =
           row.qr_image_url ??
@@ -222,6 +209,14 @@ export async function POST(req: NextRequest) {
           row['ผู้ประสานงาน'] ??
           null;
 
+        const coordinator_phone =
+          row.coordinator_phone ??
+          row['coordinator_phone'] ??
+          row['เบอร์โทรผู้ประสานงาน'] ??
+          row['เบอร์ผู้ประสานงาน'] ??
+          row['โทรผู้ประสานงาน'] ??
+          null;
+
         const hotel_name =
           row.hotel_name ??
           row['โรงแรม'] ??
@@ -229,20 +224,16 @@ export async function POST(req: NextRequest) {
           row['ที่พัก'] ??
           null;
 
-        const event_id =
-          row.event_id ??
-          row['event_id'] ??
-          null;
+        const event_id = row.event_id ?? row['event_id'] ?? null;
 
+        // ถ้าไม่มีชื่อหรือไม่มี token → ข้าม
         if (!full_name || !ticket_token) return null;
 
         // ✅ แปลง region เป็นตัวเลข 0–9
-        // 0 = ศาลเยาวชนและครอบครัวกลาง
         let regionNum: number | null = null;
         if (region_raw != null) {
           const rawStr = String(region_raw).trim();
 
-          // เผื่อกรณีเขียนเป็นข้อความในไฟล์
           if (
             rawStr === 'ศาลกลาง' ||
             rawStr === 'ศาลเยาวชนและครอบครัวกลาง' ||
@@ -271,20 +262,23 @@ export async function POST(req: NextRequest) {
           coordinator_name: coordinator_name
             ? String(coordinator_name).trim()
             : null,
+          coordinator_phone: coordinator_phone
+            ? String(coordinator_phone).trim()
+            : null,
           hotel_name: hotel_name ? String(hotel_name).trim() : null,
         };
       })
       .filter(Boolean) as PreparedRow[];
 
-    // 4) เช็กกรณีไม่พบข้อมูลที่นำเข้า
+    // 4) เช็กกรณีไม่พบข้อมูลที่พร้อมนำเข้า (หลังจาก filter null ออก)
     if (prepared.length === 0) {
       return NextResponse.json(
         {
           ok: false,
           message:
-            'ไม่พบข้อมูลที่พร้อมนำเข้า (ตรวจสอบว่ามีคอลัมน์ ชื่อ-นามสกุล และ Token ในไฟล์ หรือมีข้อมูลอย่างน้อย 1 แถว)',
+            'ไม่พบข้อมูลที่พร้อมนำเข้า (ตรวจสอบว่ามีคอลัมน์ ชื่อ-นามสกุล และ Token/รหัสบัตร และมีข้อมูลอย่างน้อย 1 แถวในอย่างน้อย 1 ชีต)',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -301,7 +295,7 @@ export async function POST(req: NextRequest) {
           message:
             'ไม่พบ event ในฐานข้อมูล กรุณาสร้างรายการ event ก่อนจึงจะนำเข้ารายชื่อได้',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -322,10 +316,11 @@ export async function POST(req: NextRequest) {
           qr_image_url: row.qr_image_url,
           food_type: row.food_type,
           coordinator_name: row.coordinator_name,
+          coordinator_phone: row.coordinator_phone,
           hotel_name: row.hotel_name,
           ticket_token: row.ticket_token,
         })),
-        { onConflict: 'ticket_token' }
+        { onConflict: 'ticket_token' },
       )
       .select('id');
 
@@ -338,7 +333,7 @@ export async function POST(req: NextRequest) {
             'เกิดข้อผิดพลาดระหว่างการบันทึกข้อมูลเข้าฐานข้อมูล (เช่น ticket_token ซ้ำ หรือข้อมูลไม่ตรง constraint)',
           detail: insertError.message,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -355,7 +350,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         message: 'เกิดข้อผิดพลาดระหว่างการประมวลผลไฟล์',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

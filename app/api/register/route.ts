@@ -7,16 +7,7 @@ type ParticipantPayload = {
   fullName: string;
   position: 'chief_judge' | 'associate_judge';
   phone: string;
-  foodType:
-    | 'normal'
-    | 'no_pork'
-    | 'vegetarian'
-    | 'vegan'
-    | 'halal'
-    | 'seafood_allergy'
-    | 'other';
-  // ✅ รองรับข้อความระบุอาหารอื่น ๆ
-  foodOther?: string;
+  foodType: 'normal' | 'vegetarian' | 'halal';
 };
 
 export async function POST(req: NextRequest) {
@@ -37,6 +28,9 @@ export async function POST(req: NextRequest) {
     const coordinatorName = (formData.get('coordinatorName') || '')
       .toString()
       .trim();
+    const coordinatorPhone = (formData.get('coordinatorPhone') || '')
+      .toString()
+      .trim();
 
     // ✅ แปลง region เป็นตัวเลข (รองรับ 0–9 โดย 0 = ศาลเยาวชนและครอบครัวกลาง)
     const region = Number.parseInt(regionStr, 10);
@@ -49,47 +43,46 @@ export async function POST(req: NextRequest) {
           message:
             'สังกัดภาคไม่ถูกต้อง (ต้องเป็น 0–9 โดย 0 = ศาลเยาวชนและครอบครัวกลาง)',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!organization) {
       return NextResponse.json(
         { ok: false, message: 'กรุณาเลือกหน่วยงาน / ศาล' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!province) {
       return NextResponse.json(
         { ok: false, message: 'กรุณากรอกจังหวัด' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // ✅ เพิ่ม validation โรงแรมฝั่ง backend ให้ตรงกับฟอร์มหน้าเว็บ
+    // ✅ ให้ backend เช็กโรงแรมเหมือนฟอร์ม
     if (!hotelName) {
       return NextResponse.json(
         { ok: false, message: 'กรุณาเลือกโรงแรมที่พัก' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // ถ้าจะบังคับ coordinatorName ฝั่ง backend ด้วยก็ทำได้ (ทาง frontend บังคับแล้ว)
-    // if (!coordinatorName) {
-    //   return NextResponse.json(
-    //     { ok: false, message: 'กรุณากรอกชื่อ-สกุลผู้ประสานงาน' },
-    //     { status: 400 }
-    //   );
-    // }
+    // ถ้าอยากให้ backend บังคับผู้ประสานงานด้วย เปิดส่วนนี้ได้เลย
+    if (!coordinatorName) {
+      return NextResponse.json(
+        { ok: false, message: 'กรุณากรอกชื่อ-สกุลผู้ประสานงาน' },
+        { status: 400 },
+      );
+    }
 
-    // ทำให้สลิปเป็น optional ชั่วคราว (ถ้าจะบังคับก็เอา comment ออก)
-    // if (!slip) {
-    //   return NextResponse.json(
-    //     { ok: false, message: 'กรุณาแนบไฟล์หลักฐานค่าลงทะเบียน' },
-    //     { status: 400 }
-    //   );
-    // }
+    if (!coordinatorPhone) {
+      return NextResponse.json(
+        { ok: false, message: 'กรุณากรอกเบอร์โทรศัพท์ผู้ประสานงาน' },
+        { status: 400 },
+      );
+    }
 
     let participants: ParticipantPayload[] = [];
     try {
@@ -97,21 +90,21 @@ export async function POST(req: NextRequest) {
     } catch {
       return NextResponse.json(
         { ok: false, message: 'รูปแบบข้อมูลผู้เข้าร่วมไม่ถูกต้อง' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!participants || participants.length === 0) {
       return NextResponse.json(
         { ok: false, message: 'ต้องมีผู้เข้าร่วมอย่างน้อย 1 คน' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!participants[0].fullName?.trim()) {
       return NextResponse.json(
         { ok: false, message: 'กรุณากรอกชื่อผู้เข้าร่วมคนที่ 1' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -119,7 +112,7 @@ export async function POST(req: NextRequest) {
     if (!EVENT_ID) {
       return NextResponse.json(
         { ok: false, message: 'ยังไม่ได้ตั้งค่า EVENT_ID ใน Environment' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -152,7 +145,7 @@ export async function POST(req: NextRequest) {
             ok: false,
             message: `อัปโหลดไฟล์สลิปไม่สำเร็จ: ${uploadError.message}`,
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -174,12 +167,6 @@ export async function POST(req: NextRequest) {
           ? 'ผู้พิพากษาหัวหน้าศาลฯ'
           : 'ผู้พิพากษาสมทบ';
 
-      // ✅ รองรับข้อความอาหารอื่น ๆ จาก payload (ถ้ามี)
-      const rawFoodOther =
-        typeof (p as any).foodOther === 'string'
-          ? (p as any).foodOther.trim()
-          : '';
-
       const foodType = p.foodType || 'normal';
 
       return {
@@ -194,11 +181,8 @@ export async function POST(req: NextRequest) {
         qr_image_url: null,
         slip_url: slipUrl,
         food_type: foodType,
-        food_other:
-          foodType === 'other' && rawFoodOther.length > 0
-            ? rawFoodOther
-            : null,
         coordinator_name: coordinatorName || null,
+        coordinator_phone: coordinatorPhone || null,
         hotel_name: hotelName || null,
       };
     });
@@ -216,7 +200,7 @@ export async function POST(req: NextRequest) {
           ok: false,
           message: `บันทึกข้อมูลผู้เข้าร่วมไม่สำเร็จ: ${insertError.message}`,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -229,7 +213,7 @@ export async function POST(req: NextRequest) {
         count: rows.length,
         totalAttendees: totalAttendees || rows.length,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error('[Register] Unexpected error:', error);
@@ -237,7 +221,7 @@ export async function POST(req: NextRequest) {
       error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { ok: false, message: `เกิดข้อผิดพลาด: ${errorMessage}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

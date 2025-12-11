@@ -4,7 +4,7 @@
 import './register.css';
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 
-// ❌ ตัด 'other' ออก เหลือเฉพาะ 3 แบบ
+// ✅ ประเภทอาหาร (ตัด other ออก เหลือ 3 แบบ)
 type FoodType = 'normal' | 'vegetarian' | 'halal';
 
 type PositionType = 'chief_judge' | 'associate_judge';
@@ -47,7 +47,8 @@ const REGION_ORGANIZATIONS: Record<string, string[]> = {
     'ศาลเยาวชนและครอบครัวจังหวัดสระบุรี',
     'ศาลเยาวชนและครอบครัวจังหวัดสิงห์บุรี',
     'ศาลเยาวชนและครอบครัวจังหวัดอ่างทอง',
-    'ศาลแพ่งมีนบุรีและศาลอาญามีนบุรี แผนกคดีเยาวชนและครอบครัว',
+    'ศาลแพ่งมีนบุรี',
+    'ศาลอาญามีนบุรีแผนกคดีเยาวชนและครอบครัว'
   ],
   '2': [
     'ศาลเยาวชนและครอบครัวจังหวัดจันทบุรี',
@@ -144,6 +145,7 @@ export default function RegisterPage() {
   const [province, setProvince] = useState('');
   const [region, setRegion] = useState(''); // 0–9
   const [coordinatorName, setCoordinatorName] = useState('');
+  const [coordinatorPhone, setCoordinatorPhone] = useState(''); // ✅ เบอร์โทรผู้ประสานงาน
 
   // ✅ แยก state ของ "ตัวเลือกใน select" ออกจาก "ชื่อโรงแรมจริงที่ส่งไป backend"
   const [hotelSelect, setHotelSelect] = useState('');
@@ -269,6 +271,10 @@ export default function RegisterPage() {
       setErrorMessage('กรุณากรอกชื่อ-สกุลผู้ประสานงาน');
       return;
     }
+    if (!coordinatorPhone.trim()) {
+      setErrorMessage('กรุณากรอกเบอร์โทรศัพท์ผู้ประสานงาน');
+      return;
+    }
     if (!actualHotelName) {
       setErrorMessage('กรุณาเลือกหรือระบุโรงแรมที่พัก');
       return;
@@ -294,6 +300,7 @@ export default function RegisterPage() {
       formData.append('province', province);
       formData.append('region', region);
       formData.append('coordinatorName', coordinatorName);
+      formData.append('coordinatorPhone', coordinatorPhone); // ✅ ส่งไป backend
       formData.append('hotelName', actualHotelName);
       formData.append('totalAttendees', String(totalAttendees));
       formData.append('participants', JSON.stringify(participants));
@@ -343,7 +350,11 @@ export default function RegisterPage() {
       setHotelSelect('');
       setHotelOther('');
       // ถ้าต้องการ reset อย่างอื่น:
-      // setRegion(''); setOrganization(''); setProvince(''); setCoordinatorName('');
+      // setRegion('');
+      // setOrganization('');
+      // setProvince('');
+      // setCoordinatorName('');
+      // setCoordinatorPhone('');
     } catch (err: any) {
       console.error(err);
       setErrorMessage(
@@ -384,16 +395,32 @@ export default function RegisterPage() {
                 <option value="">-- เลือกสังกัดภาค / ศาลกลาง --</option>
                 <option value="0">ศาลเยาวชนและครอบครัวกลาง</option>
                 <option value="1">
-                  1 (กรุงเทพฯ และจังหวัดในภาคกลาง)
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 1
                 </option>
-                <option value="2">2 (จังหวัดในภาคตะวันออก)</option>
-                <option value="3">3 (จังหวัดในภาคอีสานตอนล่าง)</option>
-                <option value="4">4 (จังหวัดในภาคอีสานตอนบน)</option>
-                <option value="5">5 (จังหวัดในภาคเหนือ)</option>
-                <option value="6">6 (จังหวัดในภาคกลางตอนบน)</option>
-                <option value="7">7 (จังหวัดในภาคตะวันตก)</option>
-                <option value="8">8 (จังหวัดในภาคใต้ตอนบน)</option>
-                <option value="9">9 (จังหวัดในภาคใต้ตอนล่าง)</option>
+                <option value="2">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 2
+                </option>
+                <option value="3">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 3
+                </option>
+                <option value="4">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 4
+                </option>
+                <option value="5">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 5
+                </option>
+                <option value="6">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 6
+                </option>
+                <option value="7">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 7
+                </option>
+                <option value="8">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 8
+                </option>
+                <option value="9">
+                  ศาลในสังกัดสำนักศาลยุติธรรมประจำภาค 9
+                </option>
               </select>
             </div>
 
@@ -450,6 +477,24 @@ export default function RegisterPage() {
                 value={coordinatorName}
                 onChange={(e) => setCoordinatorName(e.target.value)}
                 placeholder="เช่น นางสาวกานดา ตัวอย่างดี"
+                required
+              />
+            </div>
+
+            <div className="register-field">
+              <label
+                htmlFor="coordinatorPhone"
+                className="register-label"
+              >
+                เบอร์โทรศัพท์ผู้ประสานงาน *
+              </label>
+              <input
+                id="coordinatorPhone"
+                type="tel"
+                className="register-input"
+                value={coordinatorPhone}
+                onChange={(e) => setCoordinatorPhone(e.target.value)}
+                placeholder="เช่น 0812345678"
                 required
               />
             </div>
