@@ -2,6 +2,7 @@
 import { createServerClient } from '@/lib/supabaseServer';
 import AdminNav from '../AdminNav';
 import '../admin-page.css';
+import DownloadNamecardsPdfButton from './DownloadNamecardsPdfButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,9 +61,10 @@ function buildQrUrl(ticketToken: string | null, qrImageUrl: string | null) {
 
 export default async function NamecardsPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  const keyword = (sp.q ?? '').trim().toLowerCase();
+  const keywordRaw = (sp.q ?? '').trim();
+  const keyword = keywordRaw.toLowerCase();
 
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase
     .from('attendees')
@@ -127,11 +129,6 @@ export default async function NamecardsPage({ searchParams }: PageProps) {
       })
     : attendees;
 
-  // 🔗 query สำหรับปุ่มดาวน์โหลด PDF (ให้ตรงกับตัวกรองที่ใช้อยู่)
-  const pdfExportHref = keyword
-    ? `/api/admin/export-namecards-pdf?q=${encodeURIComponent(keyword)}`
-    : '/api/admin/export-namecards-pdf';
-
   return (
     <div className="page-wrap">
       <div className="page-gradient" />
@@ -164,7 +161,7 @@ export default async function NamecardsPage({ searchParams }: PageProps) {
                 <input
                   type="text"
                   name="q"
-                  defaultValue={keyword}
+                  defaultValue={keywordRaw}
                   placeholder="พิมพ์คำค้นหา เช่น ชื่อ หน่วยงาน ตำแหน่ง จังหวัด หรือ Token"
                   className="admin-filters__input"
                 />
@@ -178,15 +175,8 @@ export default async function NamecardsPage({ searchParams }: PageProps) {
                   ล้างตัวกรอง
                 </a>
 
-                {/* ✅ ปุ่มดาวน์โหลดนามบัตร (PDF) */}
-                <a
-                  href={pdfExportHref}
-                  className="admin-export-btn"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  ⬇️ ดาวน์โหลดนามบัตร (PDF)
-                </a>
+                {/* ✅ ปุ่มดาวน์โหลดนามบัตร (PDF) -> เด้งเลือกภาคก่อน แล้วดาวน์โหลดเลย */}
+                <DownloadNamecardsPdfButton />
 
                 <a
                   href="/admin"
@@ -203,50 +193,43 @@ export default async function NamecardsPage({ searchParams }: PageProps) {
         {/* ---------- Namecard List ---------- */}
         <section className="namecard-list">
           {filtered.length === 0 ? (
-            <p className="admin-table__empty">
-              ไม่พบนามบัตรตามเงื่อนไขที่ค้นหา
-            </p>
+            <p className="admin-table__empty">ไม่พบนามบัตรตามเงื่อนไขที่ค้นหา</p>
           ) : (
             <div className="namecard-grid">
               {filtered.map((a) => {
                 const qrUrl = buildQrUrl(a.ticket_token, a.qr_image_url);
-                const foodLabel = formatFoodType(a.food_type);
+                formatFoodType(a.food_type); // เผื่อใช้ต่อ (ยังไม่แสดงใน UI)
 
                 return (
-              <article key={a.id} className="namecard-item">
-  <header className="namecard-item__header">
-    <h2 className="namecard-item__name">
-      {a.full_name || 'ไม่ระบุชื่อ'}
-    </h2>
-    <p className="namecard-item__org">
-      หน่วยงาน: {a.organization || 'ไม่ระบุหน่วยงาน'}
-    </p>
-    <p className="namecard-item__job">
-      ตำแหน่ง: {a.job_position || 'ไม่ระบุตำแหน่ง'}
-    </p>
-    <p className="namecard-item__province">
-      จังหวัด: {a.province || 'ไม่ระบุจังหวัด'}
-    </p>
-    <p className="namecard-item__phone">
-      โทรศัพท์: {a.phone || 'ไม่ระบุ'}
-    </p>
-  </header>
+                  <article key={a.id} className="namecard-item">
+                    <header className="namecard-item__header">
+                      <h2 className="namecard-item__name">
+                        {a.full_name || 'ไม่ระบุชื่อ'}
+                      </h2>
+                      <p className="namecard-item__org">
+                        หน่วยงาน: {a.organization || 'ไม่ระบุหน่วยงาน'}
+                      </p>
+                      <p className="namecard-item__job">
+                        ตำแหน่ง: {a.job_position || 'ไม่ระบุตำแหน่ง'}
+                      </p>
+                      <p className="namecard-item__province">
+                        จังหวัด: {a.province || 'ไม่ระบุจังหวัด'}
+                      </p>
+                      <p className="namecard-item__phone">
+                        โทรศัพท์: {a.phone || 'ไม่ระบุ'}
+                      </p>
+                    </header>
 
-  <div className="namecard-item__body">
-    <div className="namecard-item__qr">
-      {qrUrl ? (
-        <img
-          src={qrUrl}
-          alt={a.ticket_token || 'QR Code'}
-        />
-      ) : (
-        <span>ไม่มี QR Code</span>
-      )}
-    </div>
-
-
-  </div>
-</article>
+                    <div className="namecard-item__body">
+                      <div className="namecard-item__qr">
+                        {qrUrl ? (
+                          <img src={qrUrl} alt={a.ticket_token || 'QR Code'} />
+                        ) : (
+                          <span>ไม่มี QR Code</span>
+                        )}
+                      </div>
+                    </div>
+                  </article>
                 );
               })}
             </div>

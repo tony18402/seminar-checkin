@@ -4,8 +4,6 @@ import { NextResponse } from 'next/server';
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { createServerClient } from '@/lib/supabaseServer';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,18 +14,58 @@ type AttendeeRow = {
   job_position: string | null;
   province: string | null;
   region: number | null;
-  qr_image_url: string | null; // ✅ เพิ่มฟิลด์ QR
+  qr_image_url: string | null;
 };
 
-export async function GET() {
+function isValidRegion(n: number) {
+  return Number.isInteger(n) && n >= 0 && n <= 9;
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length) as R[];
+  let i = 0;
+
+  const runners = Array.from({ length: Math.max(1, limit) }, async () => {
+    while (i < items.length) {
+      const idx = i++;
+      results[idx] = await worker(items[idx], idx);
+    }
+  });
+
+  await Promise.all(runners);
+  return results;
+}
+
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url);
+    const regionParam = url.searchParams.get('region');
+
+    if (regionParam == null) {
+      return NextResponse.json(
+        { ok: false, message: 'กรุณาระบุ region (0-9) ก่อน Export' },
+        { status: 400 }
+      );
+    }
+
+    const region = Number(regionParam);
+    if (!isValidRegion(region)) {
+      return NextResponse.json(
+        { ok: false, message: 'region ไม่ถูกต้อง (ต้องเป็นเลข 0-9)' },
+        { status: 400 }
+      );
+    }
+
     const supabase = await createServerClient();
 
     const { data, error } = await supabase
       .from('attendees')
-      .select(
-        'full_name, organization, job_position, province, region, qr_image_url'
-      ) // ✅ ดึง qr_image_url มาด้วย
+      .select('full_name, organization, job_position, province, region, qr_image_url')
+      .eq('region', region)
       .order('full_name', { ascending: true });
 
     if (error) {
@@ -44,28 +82,39 @@ export async function GET() {
 
     const attendees = (data ?? []) as AttendeeRow[];
 
-    // ✅ โหลดฟอนต์ตามที่มีใน public/fonts
-    const regularFontPath = path.join(
-      process.cwd(),
-      'public',
-      'fonts',
-      'Sarabun-Regular.ttf'
-    );
-    const boldFontPath = path.join(
-      process.cwd(),
-      'public',
-      'fonts',
-      'Sarabun-Bold.ttf'
-    );
+    if (attendees.length === 0) {
+      return NextResponse.json(
+        { ok: false, message: `ไม่พบผู้เข้าร่วมในภาค ${region}` },
+        { status: 404 }
+      );
+    }
+
+    // ✅ โหลดฟอนต์ผ่าน HTTP จาก public/fonts (รองรับ Serverless/Vercel)
+    const regularFontUrl = new URL('/fonts/Sarabun-Regular.ttf', url.origin).toString();
+    const boldFontUrl = new URL('/fonts/Sarabun-Bold.ttf', url.origin).toString();
+
+    const [regularResp, boldResp] = await Promise.all([
+      fetch(regularFontUrl, { cache: 'no-store' }),
+      fetch(boldFontUrl, { cache: 'no-store' }),
+    ]);
+
+    if (!regularResp.ok || !boldResp.ok) {
+      const missing = [
+        !regularResp.ok ? 'Sarabun-Regular.ttf' : null,
+        !boldResp.ok ? 'Sarabun-Bold.ttf' : null,
+      ].filter(Boolean);
+      return NextResponse.json(
+        { ok: false, message: `ไม่พบไฟล์ฟอนต์: ${missing.join(', ')}` },
+        { status: 500 }
+      );
+    }
 
     const [regularFontBytes, boldFontBytes] = await Promise.all([
-      fs.readFile(regularFontPath),
-      fs.readFile(boldFontPath),
+      regularResp.arrayBuffer().then((ab) => new Uint8Array(ab)),
+      boldResp.arrayBuffer().then((ab) => new Uint8Array(ab)),
     ]);
 
     const pdfDoc = await PDFDocument.create();
-
-    // ⭐ register fontkit ก่อนใช้ embedFont กับไฟล์ .ttf
     pdfDoc.registerFontkit(fontkit);
 
     const thaiFont = await pdfDoc.embedFont(regularFontBytes);
@@ -76,7 +125,7 @@ export async function GET() {
 
     // จำนวนการ์ดต่อหน้า: 2 คอลัมน์ × 3 แถว = 6 ช่อง
     const cardsPerRow = 2;
-    const cardsPerColumn = 3; // เดิม 4
+    const cardsPerColumn = 3;
     const cardsPerPage = cardsPerRow * cardsPerColumn;
 
     const cardWidth = pageWidth / cardsPerRow;
@@ -89,6 +138,30 @@ export async function GET() {
     const fontSizeJob = 12;
     const fontSizeOrg = 11;
     const fontSizeRegionProvince = 11;
+
+    // ✅ Pre-fetch QR images แบบจำกัด concurrency (กันช้า/timeout)
+    const uniqueQrUrls = Array.from(
+      new Set(attendees.map((a) => a.qr_image_url).filter((u): u is string => !!u))
+    );
+
+    const qrBytesMap = new Map<string, Uint8Array>();
+
+    await mapWithConcurrency(uniqueQrUrls, 8, async (qrUrl) => {
+      try {
+        const res = await fetch(qrUrl, { cache: 'no-store' });
+        if (!res.ok) {
+          console.warn('[export-namecards-pdf] QR fetch failed:', qrUrl, res.status);
+          return null;
+        }
+        const ab = await res.arrayBuffer();
+        qrBytesMap.set(qrUrl, new Uint8Array(ab));
+      } catch (e) {
+        console.warn('[export-namecards-pdf] QR fetch error:', qrUrl, (e as Error).message);
+      }
+      return null;
+    });
+
+    const qrImageMap = new Map<string, any>();
 
     let page = pdfDoc.addPage([pageWidth, pageHeight]);
     let cardIndex = 0;
@@ -123,31 +196,30 @@ export async function GET() {
       const org = attendee.organization ?? '';
       const job = attendee.job_position ?? '';
       const province = attendee.province ?? '';
-      const region = attendee.region ?? null;
+      const r = attendee.region;
       const qrUrl = attendee.qr_image_url ?? '';
 
-      // 🧾 พยายามโหลด QR image ถ้ามี url
-      let qrImage = null;
+      // 🧾 เตรียม QR image (reuse ถ้าเคย embed แล้ว)
+      let qrImage: any = null;
       if (qrUrl) {
-        try {
-          const res = await fetch(qrUrl);
-          if (res.ok) {
-            const qrArrayBuffer = await res.arrayBuffer();
-            // ส่วนใหญ่ QR เป็น PNG ถ้าคุณใช้ Supabase storage build PNG
-            qrImage = await pdfDoc.embedPng(qrArrayBuffer);
-          } else {
-            console.warn(
-              '[export-namecards-pdf] QR fetch failed:',
-              qrUrl,
-              res.status
-            );
+        const cached = qrImageMap.get(qrUrl);
+        if (cached) {
+          qrImage = cached;
+        } else {
+          const bytes = qrBytesMap.get(qrUrl);
+          if (bytes) {
+            try {
+              qrImage = await pdfDoc.embedPng(bytes);
+              qrImageMap.set(qrUrl, qrImage);
+            } catch {
+              try {
+                qrImage = await pdfDoc.embedJpg(bytes);
+                qrImageMap.set(qrUrl, qrImage);
+              } catch (e) {
+                console.warn('[export-namecards-pdf] QR embed failed:', qrUrl, (e as Error).message);
+              }
+            }
           }
-        } catch (e) {
-          console.warn(
-            '[export-namecards-pdf] QR fetch error:',
-            qrUrl,
-            (e as Error).message
-          );
         }
       }
 
@@ -173,10 +245,13 @@ export async function GET() {
         });
       }
 
-      // 🌍 ภาค + จังหวัด (อยู่ก่อนหน่วยงาน)
-      if (region || province) {
-        const regionLabel = region ? `ภาค ${region}` : '';
-        const provinceLabel = province ? `จังหวัด${province}` : '';
+      // 🌍 ภาค + จังหวัด (รองรับภาค 0 ด้วย)
+      const hasRegion = r !== null && r !== undefined;
+      const hasProvince = !!province;
+
+      if (hasRegion || hasProvince) {
+        const regionLabel = hasRegion ? `ภาค ${r}` : '';
+        const provinceLabel = hasProvince ? `จังหวัด${province}` : '';
         const sep = regionLabel && provinceLabel ? ' – ' : '';
         const line = `${regionLabel}${sep}${provinceLabel}`;
 
@@ -208,7 +283,7 @@ export async function GET() {
 
       // 🧩 วาด QR ด้านล่าง ใหญ่ขึ้น
       if (qrImage) {
-        const qrSize = 96; // ขยายจาก 72 -> 96
+        const qrSize = 96;
         page.drawImage(qrImage, {
           x: x + cardWidth / 2 - qrSize / 2,
           y: y + marginY + 10,
@@ -221,18 +296,17 @@ export async function GET() {
     }
 
     const pdfBytes = await pdfDoc.save();
+    const filename = `namecards-region-${region}.pdf`;
+    const abCopy = new ArrayBuffer(pdfBytes.byteLength);
+    new Uint8Array(abCopy).set(pdfBytes);
+    const blob = new Blob([abCopy], { type: 'application/pdf' });
 
-    const pdfArrayBuffer = pdfBytes.buffer.slice(
-      pdfBytes.byteOffset,
-      pdfBytes.byteOffset + pdfBytes.byteLength
-    ) as ArrayBuffer;
-
-    return new NextResponse(pdfArrayBuffer, {
+    return new NextResponse(blob, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition':
-          'attachment; filename="namecards-attendees.pdf"',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-store',
       },
     });
   } catch (err: any) {
