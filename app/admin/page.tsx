@@ -7,6 +7,7 @@ import AdminNav from './AdminNav';
 import AdminImportButton from './AdminImportButton';
 import AdminDeleteButton from './AdminDeleteButton';
 import AdminFilters from './AdminFilters';
+import { redirect } from "next/navigation";
 
 // 👉 นำเข้าไฟล์ CSS ที่สร้างขึ้นมาใช้กับหน้านี้โดยเฉพาะ
 import './admin-page.css';
@@ -16,10 +17,11 @@ export const dynamic = 'force-dynamic';
 type AdminPageProps = {
   searchParams: Promise<{
     q?: string;
-    status?: string; // all | checked | unchecked
+    status?: string;
     region?: string;
     organization?: string;
-    province?: string; // รองรับ province ใน query string
+    province?: string;
+    page?: string; // <-- Add this line
   }>;
 };
 
@@ -92,18 +94,48 @@ function formatRegion(region: number | null): string {
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const sp = await searchParams;
+
+  const PAGE_SIZE = 5;
+  // ป้องกัน parseInt ได้ NaN กรณี sp.page เป็น undefined/null/ไม่ใช่ string
+  const pageParam = sp.page && typeof sp.page === "string" && !isNaN(Number(sp.page))
+    ? parseInt(sp.page, 10)
+    : 1;
+  const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  // --- Filter params ---
   const keyword = (sp.q ?? '').trim().toLowerCase();
   const status = sp.status ?? 'all';
   const regionFilter = (sp.region ?? '').trim();
   const organizationFilter = (sp.organization ?? '').trim().toLowerCase();
-  const provinceFilter = (sp.province ?? '').trim().toLowerCase(); // ตัวกรองจังหวัด (จาก query)
+  const provinceFilter = (sp.province ?? '').trim().toLowerCase();
 
   const supabase = createServerClient();
 
-  const { data, error } = await supabase
+  // --- Count all filtered rows (for pagination) ---
+  let countQuery = supabase
     .from('attendees')
-    .select(
-      `
+    .select('*', { count: 'exact', head: true });
+
+  // Apply filters to count query
+  if (keyword) {
+    countQuery = countQuery.or(
+      `full_name.ilike.%${keyword}%,organization.ilike.%${keyword}%,job_position.ilike.%${keyword}%,province.ilike.%${keyword}%,ticket_token.ilike.%${keyword}%,coordinator_name.ilike.%${keyword}%,coordinator_phone.ilike.%${keyword}%`
+    );
+  }
+  if (status === 'checked') countQuery = countQuery.filter('checked_in_at', 'not.is', null);
+  else if (status === 'unchecked') countQuery = countQuery.filter('checked_in_at', 'is', null);
+  if (regionFilter) countQuery = countQuery.eq('region', regionFilter);
+  if (provinceFilter) countQuery = countQuery.ilike('province', `%${provinceFilter}%`);
+  if (organizationFilter) countQuery = countQuery.ilike('organization', `%${organizationFilter}%`);
+
+  const { count: totalFiltered = 0 } = await countQuery;
+
+  // --- Query paged data ---
+  let dataQuery = supabase
+    .from('attendees')
+    .select(`
       id,
       event_id,
       full_name,
@@ -120,10 +152,24 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       hotel_name,
       coordinator_name,
       coordinator_phone
-    `,
-    )
+    `)
     .order('region', { ascending: true, nullsFirst: false })
-    .order('full_name', { ascending: true });
+    .order('full_name', { ascending: true })
+    .range(from, to);
+
+  // Apply filters to data query
+  if (keyword) {
+    dataQuery = dataQuery.or(
+      `full_name.ilike.%${keyword}%,organization.ilike.%${keyword}%,job_position.ilike.%${keyword}%,province.ilike.%${keyword}%,ticket_token.ilike.%${keyword}%,coordinator_name.ilike.%${keyword}%,coordinator_phone.ilike.%${keyword}%`
+    );
+  }
+  if (status === 'checked') dataQuery = dataQuery.filter('checked_in_at', 'not.is', null);
+  else if (status === 'unchecked') dataQuery = dataQuery.filter('checked_in_at', 'is', null);
+  if (regionFilter) dataQuery = dataQuery.eq('region', regionFilter);
+  if (provinceFilter) dataQuery = dataQuery.ilike('province', `%${provinceFilter}%`);
+  if (organizationFilter) dataQuery = dataQuery.ilike('organization', `%${organizationFilter}%`);
+
+  const { data, error } = await dataQuery;
 
   if (error || !data) {
     return (
@@ -146,10 +192,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const attendees: AttendeeRow[] = data as AttendeeRow[];
 
-  const total = attendees.length;
-  const totalChecked = attendees.filter((a) => a.checked_in_at).length;
-  const totalWithSlip = attendees.filter((a) => a.slip_url).length;
-
+  // --- ดึง options เฉพาะ organization/province ที่จำเป็น (ไม่ดึง attendee ทั้งหมด) ---
+  // (ถ้าต้องการ performance สูงสุด ควรแยก query เฉพาะ column ที่ต้องการ)
   // รายการศาล / หน่วยงานทั้งหมดจากข้อมูลจริง สำหรับทำ dropdown เลือก
   const organizationOptions = Array.from(
     new Set(
@@ -168,52 +212,160 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     ),
   ).sort((a, b) => a.localeCompare(b, 'th-TH'));
 
-  let filtered = attendees;
+  const total = attendees.length;
+  const totalChecked = attendees.filter((a) => a.checked_in_at).length;
+  const totalWithSlip = attendees.filter((a) => a.slip_url).length;
 
-  if (keyword) {
-    filtered = filtered.filter((a) => {
-      const name = (a.full_name ?? '').toLowerCase();
-      const org = (a.organization ?? '').toLowerCase();
-      const job = (a.job_position ?? '').toLowerCase();
-      const province = (a.province ?? '').toLowerCase();
-      const token = (a.ticket_token ?? '').toLowerCase();
-      const coordName = (a.coordinator_name ?? '').toLowerCase();
-      const coordPhone = (a.coordinator_phone ?? '').toLowerCase();
-      return (
-        name.includes(keyword) ||
-        org.includes(keyword) ||
-        job.includes(keyword) ||
-        province.includes(keyword) ||
-        token.includes(keyword) ||
-        coordName.includes(keyword) ||
-        coordPhone.includes(keyword)
-      );
-    });
-  }
+  const safeTotalFiltered = totalFiltered ?? 0;
+  const totalPages = Math.ceil(safeTotalFiltered / PAGE_SIZE);
 
-  if (status === 'checked') {
-    filtered = filtered.filter((a) => a.checked_in_at);
-  } else if (status === 'unchecked') {
-    filtered = filtered.filter((a) => !a.checked_in_at);
-  }
-
-  if (regionFilter) {
-    const target = regionFilter.trim();
-    filtered = filtered.filter(
-      (a) => String(a.region ?? '').trim() === target,
+  // --- Pagination rendering function ---
+  function renderPagination(page: number, totalPages: number, sp: Record<string, any>) {
+    if (totalPages <= 1) return null;
+    const pageLinks = [];
+    // ใช้ React.ReactNode ตามที่ต้องการ
+    const createPageForm = (
+      p: number,
+      label?: React.ReactNode,
+      active?: boolean,
+      disabled?: boolean
+    ) => (
+      <form
+        method="get"
+        style={{ display: "inline" }}
+        key={`page-${p}-${String(label) || 'default'}`}
+      >
+        {Object.entries(sp).map(([k, v]) =>
+          k !== "page" && v ? (
+            <input key={k} type="hidden" name={k} value={v} />
+          ) : null
+        )}
+        <button
+          type="submit"
+          name="page"
+          value={p}
+          disabled={disabled}
+          style={{
+            margin: "0 2px",
+            fontWeight: active ? "bold" : undefined,
+            color: active ? "#e75480" : "#333",
+            background: "none",
+            border: "none",
+            cursor: disabled ? "default" : "pointer",
+            textDecoration: active ? "underline" : undefined,
+            minWidth: 28,
+            fontSize: 18,
+            outline: "none",
+            borderRadius: 4,
+            padding: "2px 6px",
+            transition: "color 0.2s",
+          }}
+        >
+          {label || p}
+        </button>
+      </form>
     );
-  }
 
-  // กรองตามจังหวัด (ถ้ามีเลือก)
-  if (provinceFilter) {
-    filtered = filtered.filter((a) =>
-      (a.province ?? '').toLowerCase().includes(provinceFilter),
+    // Always show first, last, current, and neighbors
+    let start = Math.max(1, page - 3);
+    let end = Math.min(totalPages, page + 3);
+
+    if (page <= 4) {
+      start = 1;
+      end = Math.min(7, totalPages);
+    } else if (page >= totalPages - 3) {
+      start = Math.max(1, totalPages - 6);
+      end = totalPages;
+    }
+
+    // First page
+    if (start > 1) {
+      pageLinks.push(createPageForm(1, "1", page === 1));
+      if (start > 2) pageLinks.push(<span key="start-ellipsis">...</span>);
+    }
+
+    // Middle pages
+    for (let i = start; i <= end; i++) {
+      pageLinks.push(createPageForm(i, undefined, page === i));
+    }
+
+    // Last page
+    if (end < totalPages) {
+      if (end < totalPages - 1) pageLinks.push(<span key="end-ellipsis">...</span>);
+      pageLinks.push(createPageForm(totalPages, String(totalPages), page === totalPages));
+    }
+
+    // Next
+    pageLinks.push(
+      createPageForm(page + 1, <>Next <span style={{fontWeight: "bold"}}>&gt;</span></>, false, page >= totalPages)
     );
-  }
 
-  if (organizationFilter) {
-    filtered = filtered.filter((a) =>
-      (a.organization ?? '').toLowerCase().includes(organizationFilter),
+    // --- Jump to page input ---
+    pageLinks.push(
+      <form
+        method="get"
+        key="jump"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          marginLeft: 12,
+          gap: 4,
+        }}
+      >
+        {Object.entries(sp).map(([k, v]) =>
+          k !== "page" && v ? (
+            <input key={k} type="hidden" name={k} value={v} />
+          ) : null
+        )}
+        <span>ไปหน้า</span>
+        <input
+          type="number"
+          name="page"
+          min={1}
+          max={totalPages}
+          defaultValue={page}
+          style={{
+            width: 48,
+            fontSize: 16,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            padding: "2px 6px",
+            margin: "0 2px",
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            fontSize: 16,
+            padding: "2px 10px",
+            borderRadius: 4,
+            border: "1px solid #e75480",
+            background: "#fff",
+            color: "#e75480",
+            cursor: "pointer",
+            marginLeft: 2,
+          }}
+        >
+          ไป
+        </button>
+      </form>
+    );
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "0.25rem",
+          margin: "1rem 0",
+          flexWrap: "wrap",
+          borderTop: "1px solid #eee",
+          borderRadius: "6px",
+          paddingTop: "0.5rem"
+        }}
+      >
+        {pageLinks}
+      </div>
     );
   }
 
@@ -240,7 +392,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     <section className="admin-summary">
       <div className="admin-summary__item">
         <div className="admin-summary__label">ผู้เข้าร่วมทั้งหมด</div>
-        <div className="admin-summary__value">{total}</div>
+        <div className="admin-summary__value">{totalFiltered}</div>
       </div>
       <div className="admin-summary__item">
         <div className="admin-summary__label">เช็กอินแล้ว</div>
@@ -290,21 +442,21 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       </thead>
 
       <tbody>
-        {filtered.length === 0 ? (
+        {attendees.length === 0 ? (
           <tr>
             <td colSpan={11} className="admin-table__empty">
               ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา
             </td>
           </tr>
         ) : (
-          filtered.map((a, idx) => {
+          attendees.map((a, idx) => {
             const hasSlip = !!a.slip_url;
             const isChecked = !!a.checked_in_at;
             const foodLabel = formatFoodType(a.food_type);
 
             return (
               <tr key={a.id ?? idx}>
-                <td>{idx + 1}</td>
+                <td>{from + idx + 1}</td>
 
                 {/* ✅ ชื่อ + เบอร์โทร (เบอร์อยู่บรรทัดล่าง) */}
                 <td>
@@ -419,6 +571,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         )}
       </tbody>
     </table>
+    {/* --- Pagination Controls --- */}
+    {renderPagination(page, totalPages, sp)}
+    {/* --- End Pagination Controls --- */}
   </div>
 </section>
 
