@@ -59,6 +59,8 @@ export default function RegisterUserFormPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // ป้องกัน prerender error: ใช้ sessionStorage ได้เฉพาะ client
+    if (typeof window === 'undefined') return;
     const raw = sessionStorage.getItem(DRAFT_KEY) || sessionStorage.getItem(STORAGE_KEY);
     if (!raw) {
       setState(null);
