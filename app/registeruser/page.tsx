@@ -1,7 +1,7 @@
-// app/register/page.tsx
+// app/registeruser/page.tsx
 'use client';
 
-import './register.css';
+import './registeruser.css';
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 
 // ✅ ประเภทอาหาร (ตัด other ออก เหลือ 3 แบบ)
@@ -140,7 +140,7 @@ const REGION_ORGANIZATIONS: Record<string, string[]> = {
   ],
 };
 
-export default function RegisterPage() {
+export default function RegisterUserPage() {
   const [organization, setOrganization] = useState('');
   const [province, setProvince] = useState('');
   const [region, setRegion] = useState(''); // 0–9
@@ -309,7 +309,7 @@ export default function RegisterPage() {
         formData.append('slip', slipFile);
       }
 
-      const res = await fetch('/api/register', {
+      const res = await fetch('/api/registeruser', {
         method: 'POST',
         body: formData,
       });
@@ -366,9 +366,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="register-page">
-      <div className="register-card">
-        <header className="register-header">
+    <main className="registeruser-page">
+      <div className="registeruser-card">
+        <header className="registeruser-header">
           <h1>แบบฟอร์มลงทะเบียนการประชุมสัมมนาทางวิชาการ
 ผู้พิพากษาสมทบในศาลเยาวชนและครอบครัว
 ทั่วราชอาณาจักร ประจำปี ๒๕๖๙</h1>
@@ -378,18 +378,18 @@ export default function RegisterPage() {
           </p>
         </header>
 
-        <form className="register-form" onSubmit={handleSubmit}>
+        <form className="registeruser-form" onSubmit={handleSubmit}>
           {/* 1. ข้อมูลหน่วยงาน */}
-          <section className="register-section">
-            <h2 className="register-section__title">1. ข้อมูลหน่วยงาน</h2>
+          <section className="registeruser-section">
+            <h2 className="registeruser-section__title">1. ข้อมูลหน่วยงาน</h2>
 
-            <div className="register-field">
-              <label htmlFor="region" className="register-label">
+            <div className="registeruser-field">
+              <label htmlFor="region" className="registeruser-label">
                 สังกัดภาค / ศาลกลาง *
               </label>
               <select
                 id="region"
-                className="register-select"
+                className="registeruser-select"
                 value={region}
                 onChange={handleRegionChange}
                 required
@@ -426,13 +426,13 @@ export default function RegisterPage() {
               </select>
             </div>
 
-            <div className="register-field">
-              <label htmlFor="organization" className="register-label">
+            <div className="registeruser-field">
+              <label htmlFor="organization" className="registeruser-label">
                 ชื่อหน่วยงาน / ศาล *
               </label>
               <select
                 id="organization"
-                className="register-select"
+                className="registeruser-select"
                 value={organization}
                 onChange={handleOrganizationChange}
                 required
@@ -451,31 +451,31 @@ export default function RegisterPage() {
               </select>
             </div>
 
-            <div className="register-field">
-              <label htmlFor="province" className="register-label">
+            <div className="registeruser-field">
+              <label htmlFor="province" className="registeruser-label">
                 จังหวัด *
               </label>
               <input
                 id="province"
                 type="text"
-                className="register-input"
+                className="registeruser-input"
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
                 required
               />
             </div>
 
-            <div className="register-field">
+            <div className="registeruser-field">
               <label
                 htmlFor="coordinatorName"
-                className="register-label"
+                className="registeruser-label"
               >
                 ชื่อ-สกุลผู้ประสานงาน *
               </label>
               <input
                 id="coordinatorName"
                 type="text"
-                className="register-input"
+                className="registeruser-input"
                 value={coordinatorName}
                 onChange={(e) => setCoordinatorName(e.target.value)}
                 placeholder="เช่น นางสาวกานดา ตัวอย่างดี"
@@ -483,17 +483,17 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="register-field">
+            <div className="registeruser-field">
               <label
                 htmlFor="coordinatorPhone"
-                className="register-label"
+                className="registeruser-label"
               >
                 เบอร์โทรศัพท์ผู้ประสานงาน *
               </label>
               <input
                 id="coordinatorPhone"
                 type="tel"
-                className="register-input"
+                className="registeruser-input"
                 value={coordinatorPhone}
                 onChange={(e) => setCoordinatorPhone(e.target.value)}
                 placeholder="เช่น 0812345678"
@@ -503,8 +503,8 @@ export default function RegisterPage() {
           </section>
 
           {/* 2. ผู้เข้าร่วมสัมมนาฯ */}
-          <section className="register-section">
-            <h2 className="register-section__title">
+          <section className="registeruser-section">
+            <h2 className="registeruser-section__title">
               2. ผู้เข้าร่วมสัมมนาฯ
             </h2>
 
@@ -512,11 +512,11 @@ export default function RegisterPage() {
               <fieldset key={index}>
                 <legend>ผู้เข้าร่วมคนที่ {index + 1}</legend>
 
-                <div className="register-field">
-                  <label className="register-label">ชื่อ - สกุล *</label>
+                <div className="registeruser-field">
+                  <label className="registeruser-label">ชื่อ - สกุล *</label>
                   <input
                     type="text"
-                    className="register-input"
+                    className="registeruser-input"
                     value={p.fullName}
                     onChange={(e) =>
                       handleParticipantChange(
@@ -529,10 +529,10 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <div className="register-field">
-                  <label className="register-label">ตำแหน่ง *</label>
+                <div className="registeruser-field">
+                  <label className="registeruser-label">ตำแหน่ง *</label>
                   <select
-                    className="register-select"
+                    className="registeruser-select"
                     value={p.position}
                     onChange={(e) =>
                       handleParticipantChange(
@@ -552,11 +552,11 @@ export default function RegisterPage() {
                   </select>
                 </div>
 
-                <div className="register-field">
-                  <label className="register-label">เบอร์โทรศัพท์</label>
+                <div className="registeruser-field">
+                  <label className="registeruser-label">เบอร์โทรศัพท์</label>
                   <input
                     type="tel"
-                    className="register-input"
+                    className="registeruser-input"
                     value={p.phone}
                     onChange={(e) =>
                       handleParticipantChange(
@@ -568,10 +568,10 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <div className="register-field">
-                  <label className="register-label">ประเภทอาหาร</label>
+                <div className="registeruser-field">
+                  <label className="registeruser-label">ประเภทอาหาร</label>
                   <select
-                    className="register-select"
+                    className="registeruser-select"
                     value={p.foodType}
                     onChange={(e) =>
                       handleParticipantChange(
@@ -605,13 +605,13 @@ export default function RegisterPage() {
               + เพิ่มผู้เข้าร่วม
             </button>
 
-            <div className="register-field">
-              <label className="register-label">
+            <div className="registeruser-field">
+              <label className="registeruser-label">
                 รวมผู้เข้าร่วมทั้งหมด
               </label>
               <input
                 type="number"
-                className="register-input"
+                className="registeruser-input"
                 value={totalAttendees}
                 readOnly
               />
@@ -619,38 +619,38 @@ export default function RegisterPage() {
           </section>
 
           {/* 3. หลักฐานค่าลงทะเบียน */}
-          <section className="register-section">
-            <h2 className="register-section__title">
+          <section className="registeruser-section">
+            <h2 className="registeruser-section__title">
               3. หลักฐานค่าลงทะเบียน
             </h2>
-            <div className="register-field">
-              <label htmlFor="slip" className="register-label">
+            <div className="registeruser-field">
+              <label htmlFor="slip" className="registeruser-label">
                 แนบไฟล์ *
               </label>
               <input
                 id="slip"
                 type="file"
-                className="register-input"
+                className="registeruser-input"
                 accept="image/*,application/pdf"
                 onChange={handleSlipChange}
                 required
               />
-              <p className="register-help">
+              <p className="registeruser-help">
                 รองรับไฟล์ภาพ (JPG, PNG) หรือไฟล์ PDF
               </p>
             </div>
           </section>
 
           {/* 4. โรงแรมที่พัก */}
-          <section className="register-section">
-            <h2 className="register-section__title">4. ข้อมูลเพิ่มเติม</h2>
-            <div className="register-field">
-              <label htmlFor="hotelName" className="register-label">
+          <section className="registeruser-section">
+            <h2 className="registeruser-section__title">4. ข้อมูลเพิ่มเติม</h2>
+            <div className="registeruser-field">
+              <label htmlFor="hotelName" className="registeruser-label">
                 พักโรงแรมไหน *
               </label>
               <select
                 id="hotelName"
-                className="register-select"
+                className="registeruser-select"
                 value={hotelSelect}
                 onChange={handleHotelSelectChange}
                 required
@@ -666,17 +666,17 @@ export default function RegisterPage() {
             </div>
 
             {hotelSelect === '__other' && (
-              <div className="register-field">
+              <div className="registeruser-field">
                 <label
                   htmlFor="hotelOther"
-                  className="register-label"
+                  className="registeruser-label"
                 >
                   ชื่อโรงแรม (กรณีอื่น ๆ)
                 </label>
                 <input
                   id="hotelOther"
                   type="text"
-                  className="register-input"
+                  className="registeruser-input"
                   value={hotelOther}
                   onChange={(e) => setHotelOther(e.target.value)}
                   placeholder="ระบุชื่อโรงแรมที่พัก"
@@ -686,16 +686,16 @@ export default function RegisterPage() {
           </section>
 
           {successMessage && (
-            <p className="register-note">{successMessage}</p>
+            <p className="registeruser-note">{successMessage}</p>
           )}
           {errorMessage && (
-            <p className="register-error">{errorMessage}</p>
+            <p className="registeruser-error">{errorMessage}</p>
           )}
 
-          <div className="register-actions">
+          <div className="registeruser-actions">
             <button
               type="submit"
-              className="register-button"
+              className="registeruser-button"
               disabled={submitting}
             >
               {submitting

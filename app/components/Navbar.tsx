@@ -2,7 +2,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import './Navbar.css';
 
 const navLinks = [
@@ -10,11 +12,74 @@ const navLinks = [
   { href: '/admin', label: 'จัดการผู้เข้างาน', icon: '👥' },
   { href: '/Dashboard', label: 'Dashboard', icon: '📊' },
   { href: '/admin/namecards', label: 'Namecard', icon: '🏷️' },
-  { href: '/register', label: 'ลงทะเบียน', icon: '✍️' },
+  { href: '/registeruser', label: 'ลงทะเบียน', icon: '✍️' },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const supabase = useMemo<SupabaseClient | null>(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+    if (!url || !anon) return null;
+    return createClient(url, anon);
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
+    // Check initial session
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      const session = data?.session;
+      
+      if (session?.user) {
+        setIsLoggedIn(true);
+        setUserName(session.user.email?.split('@')[0] || 'User');
+      } else {
+        setIsLoggedIn(false);
+        setUserName(null);
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          setIsLoggedIn(true);
+          setUserName(session.user.email?.split('@')[0] || 'User');
+        } else {
+          setIsLoggedIn(false);
+          setUserName(null);
+        }
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    
+    // ลบ cookie
+    document.cookie = 'sb-access-token=; path=/; max-age=0';
+    
+    router.push('/login');
+    router.refresh();
+  };
 
   // ตรวจสอบว่าลิงก์ไหน active
   const isActive = (href: string) => {
@@ -46,6 +111,31 @@ export default function Navbar() {
             </li>
           ))}
         </ul>
+
+        <div className="navbar__auth">
+          {!loading && (
+            <>
+              {isLoggedIn ? (
+                <div className="navbar__user">
+                  <span className="navbar__username">👤 {userName}</span>
+                  <Link href="/profile" className="navbar__profile-btn" style={{ marginRight: '10px', padding: '8px 16px', background: '#667eea', color: 'white', borderRadius: '6px', textDecoration: 'none' }}>
+                    โปรไฟล์
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="navbar__logout-btn"
+                  >
+                    ออกจากระบบ
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" className="navbar__login-btn">
+                  🔐 เข้าสู่ระบบ
+                </Link>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -113,6 +113,70 @@
   background: linear-gradient(90deg, #5bc0de 0%, #0369a1 100%);
 }
 
+/* Auth Section */
+.navbar__auth {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(91, 192, 222, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(91, 192, 222, 0.2);
+}
+
+.navbar__username {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-blue, #5bc0de);
+  white-space: nowrap;
+  display: none;
+}
+
+.navbar__logout-btn,
+.navbar__login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar__logout-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.navbar__logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.navbar__login-btn {
+  background: linear-gradient(135deg, #5bc0de 0%, #0369a1 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(91, 192, 222, 0.3);
+}
+
+.navbar__login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(91, 192, 222, 0.4);
+}
+
 /* Responsive Design */
 @media (min-width: 768px) {
   .navbar__link-label {
@@ -125,6 +189,10 @@
 
   .navbar__link {
     padding: 8px 16px;
+  }
+
+  .navbar__username {
+    display: inline;
   }
 }
 
@@ -150,5 +218,16 @@
 
   .navbar__link-icon {
     font-size: 1rem;
+  }
+
+  .navbar__user {
+    padding: 4px 8px;
+    gap: 6px;
+  }
+
+  .navbar__logout-btn,
+  .navbar__login-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
   }
 }
