@@ -1,0 +1,266 @@
+/* app/admin/hotel-summary/summary.css */
+
+:root {
+  --hs-bg: #ffffff;
+  --hs-surface: #ffffff;
+  --hs-muted: #f6f7fb;
+  --hs-muted-2: #eef1f7;
+
+  --hs-text: #0f172a;
+  --hs-subtext: #475569;
+
+  --hs-border: rgba(15, 23, 42, 0.12);
+  --hs-border-2: rgba(15, 23, 42, 0.18);
+
+  --hs-shadow: 0 10px 30px rgba(2, 6, 23, 0.10);
+  --hs-shadow-soft: 0 6px 18px rgba(2, 6, 23, 0.08);
+
+  --hs-radius: 16px;
+  --hs-radius-sm: 12px;
+
+  --hs-row-hover: rgba(37, 99, 235, 0.06);
+}
+
+.hsPage {
+  padding: 24px;
+  background:
+    radial-gradient(900px 240px at 10% 0%, rgba(37, 99, 235, 0.10), transparent 60%),
+    radial-gradient(900px 240px at 90% 0%, rgba(99, 102, 241, 0.10), transparent 60%),
+    var(--hs-bg);
+  color: var(--hs-text);
+}
+
+.hsTop {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.hsTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+.hsMeta {
+  margin: 6px 0 0;
+  color: var(--hs-subtext);
+  font-size: 14px;
+}
+
+.hsMeta b {
+  color: var(--hs-text);
+  font-weight: 900;
+}
+
+.hsActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Cards */
+.hsCard {
+  background: var(--hs-surface);
+  border: 1px solid var(--hs-border);
+  border-radius: var(--hs-radius);
+  box-shadow: var(--hs-shadow-soft);
+  overflow: hidden;
+}
+
+.hsTableScroll {
+  overflow: auto;
+  max-width: 100%;
+}
+
+.hsTableScroll::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.hsTableScroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+  border-radius: 999px;
+}
+.hsTableScroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+/* Headings */
+.hsSectionTitle {
+  margin: 18px 0 10px;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.1px;
+}
+
+/* Tables */
+.hsTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.hsTableHotel {
+  min-width: 900px;
+}
+
+.hsTableFood {
+  min-width: 700px;
+}
+
+.hsTh {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: linear-gradient(180deg, #fbfcff 0%, var(--hs-muted) 100%);
+  color: var(--hs-text);
+  font-weight: 900;
+  font-size: 13px;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--hs-border-2);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.hsTd {
+  padding: 11px 12px;
+  font-size: 14px;
+  background: var(--hs-surface);
+  border-bottom: 1px solid var(--hs-border);
+}
+
+.hsTable tbody tr:nth-child(even) .hsTd {
+  background: #fbfcff;
+}
+
+.hsTable tbody tr:hover .hsTd {
+  background: var(--hs-row-hover);
+}
+
+.hsTable tfoot .hsTd {
+  background: linear-gradient(180deg, var(--hs-muted) 0%, #ffffff 100%);
+  border-top: 1px solid var(--hs-border-2);
+  font-weight: 900;
+}
+
+/* Numbers */
+.hsNum {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.hsNumStrong {
+  text-align: center;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.hsFootStrong {
+  font-weight: 900;
+}
+
+/* Sticky left column */
+.hsStickyLeft {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: inherit;
+  text-align: left !important;
+  min-width: 260px;
+  white-space: normal;
+}
+
+.hsTable thead .hsStickyLeft {
+  z-index: 4;
+}
+
+.hsStickyLeft::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -10px;
+  width: 10px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(2, 6, 23, 0.10), transparent);
+  opacity: 0.7;
+}
+
+/* Alerts */
+.hsAlert {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--hs-border);
+  background: #fff;
+  box-shadow: var(--hs-shadow-soft);
+  font-weight: 700;
+}
+
+.hsAlertError {
+  border-color: rgba(220, 38, 38, 0.22);
+  background: rgba(220, 38, 38, 0.06);
+  color: #991b1b;
+}
+
+/* Export button styling (ถ้าปุ่มคุณใส่ className="hsBtn hsBtnPrimary") */
+.hsBtn {
+  appearance: none;
+  border: 1px solid var(--hs-border-2);
+  background: #ffffff;
+  color: var(--hs-text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 14px;
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.08);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.hsBtn:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.12);
+  transform: translateY(-1px);
+}
+
+.hsBtn:active {
+  transform: translateY(0px);
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.10);
+}
+
+.hsBtnPrimary {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0.04));
+}
+
+/* Print */
+@media print {
+  .hsPage {
+    padding: 0;
+    background: #fff;
+  }
+  .hsActions {
+    display: none !important;
+  }
+  .hsCard {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    border-radius: 0;
+  }
+  .hsTableScroll {
+    overflow: visible;
+  }
+  .hsTh {
+    position: static;
+  }
+  .hsStickyLeft {
+    position: static;
+  }
+  .hsStickyLeft::after {
+    display: none;
+  }
+}

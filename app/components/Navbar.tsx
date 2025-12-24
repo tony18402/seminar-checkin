@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/Dashboard', label: 'Dashboard', icon: '📊' },
   { href: '/admin/namecards', label: 'Namecard', icon: '🏷️' },
   { href: '/registeruser', label: 'ลงทะเบียน', icon: '✍️' },
+  { href: '/admin/hotel-summary', label: 'ตัวสรุปยอด', icon: '🧾' },
 ];
 
 export default function Navbar() {
