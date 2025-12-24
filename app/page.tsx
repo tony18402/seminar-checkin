@@ -64,7 +64,7 @@ export default function Home() {
             <nav className="header-nav">
               <a href="/Dashboard">Dashboard</a>
               <a href="/admin">Management</a>
-              <a href="/register">Register</a>
+              <a href="/registeruser">Register-user</a>
             </nav>
           </div>
           <div>

@@ -60,6 +60,7 @@ export default function AdminFilters({
             onChange={(e) => handleSelectChange('region', e.target.value)}
           >
             <option value="">ทุกภาค</option>
+            <option value="0">ศาลกลาง</option>
             <option value="1">ภาค 1</option>
             <option value="2">ภาค 2</option>
             <option value="3">ภาค 3</option>

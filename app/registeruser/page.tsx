@@ -1,5 +1,6 @@
 // app/registeruser/page.tsx
 'use client';
+
 import './registeruser-page.css';
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,7 +16,7 @@ type Participant = {
   foodType: FoodType;
 };
 
-// ✅ รายชื่อโรงแรมในตัวเมืองสุราษฎร์ธานี (ตามแผนที่ข้อ 1–13)
+// ✅ รายชื่อโรงแรมในตัวเมืองสุราษฎร์ธานี
 const SURAT_CITY_HOTELS: string[] = [
   'โรงแรม ไดมอนด์พลาซ่า',
   'โรงแรม ร้อยเกาะ',
@@ -33,12 +34,10 @@ const SURAT_CITY_HOTELS: string[] = [
   'โรงแรม ลีโฮเต็ล',
   'โรงแรม เอสทาราแกรนด์',
   'โรงแรม บีทูพรีเมียร',
-  'โรงแรม สุขสมบูรณ์'
-
+  'โรงแรม สุขสมบูรณ์',
 ];
 
-// ✅ mapping ภาค/ศาลกลาง → รายชื่อศาลเยาวชนและครอบครัว / แผนกคดีเยาวชนฯ
-// '0' = ศาลเยาวชนและครอบครัวกลาง (ไม่อยู่ในภาค 1–9)
+// ✅ mapping ภาค/ศาลกลาง → รายชื่อศาล
 const REGION_ORGANIZATIONS: Record<string, string[]> = {
   '0': ['ศาลเยาวชนและครอบครัวกลาง (กรุงเทพมหานคร)'],
   '1': [
@@ -192,12 +191,9 @@ export default function RegisterUserPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const currentOrganizations = useMemo(
-    () => REGION_ORGANIZATIONS[region] ?? [],
-    [region],
-  );
+  const currentOrganizations = useMemo(() => REGION_ORGANIZATIONS[region] ?? [], [region]);
 
-  // ✅ โหลดสถานะเดิม (กัน “กดแล้วกลับมาหน้านี้” แล้วข้อความค้าง)
+  // ✅ โหลดสถานะเดิม
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -255,16 +251,35 @@ export default function RegisterUserPage() {
     else setProvince('');
   }
 
-  function handleOrganizationChange(e: ChangeEvent<HTMLSelectElement>) {
-    const org = e.target.value;
-    setOrganization(org);
+  // ✅ dropdown เลือกศาล (เหมือนเดิม) แล้ว “ยังแก้พิมพ์ต่อได้”
+  function handleOrganizationSelect(e: ChangeEvent<HTMLSelectElement>) {
+    const v = e.target.value;
+
+    // เลือก "กำหนดเอง" ไม่ต้องเปลี่ยนค่า (ไปพิมพ์ใน input ด้านล่าง)
+    if (v === '__custom') return;
+
+    setOrganization(v);
 
     if (region === '0') {
       setProvince('กรุงเทพมหานคร');
       return;
     }
 
-    const provinceMatch = org.split('จังหวัด')[1]?.trim();
+    const provinceMatch = v.split('จังหวัด')[1]?.trim();
+    if (provinceMatch) setProvince(provinceMatch);
+  }
+
+  // ✅ ช่องพิมพ์แก้ไขชื่อหน่วยงาน/ศาล
+  function handleOrganizationInput(e: ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value;
+    setOrganization(v);
+
+    if (region === '0') {
+      setProvince('กรุงเทพมหานคร');
+      return;
+    }
+
+    const provinceMatch = v.split('จังหวัด')[1]?.trim();
     if (provinceMatch) setProvince(provinceMatch);
   }
 
@@ -274,14 +289,13 @@ export default function RegisterUserPage() {
     if (value !== '__other') setHotelOther('');
   }
 
-  // ✅ ปุ่ม “บันทึกจำนวนผู้เข้าร่วม / แก้ไข” -> ไปหน้า /registeruser/form?count= (แท็บเดิม)
+  // ✅ ปุ่ม “บันทึกจำนวนผู้เข้าร่วม / แก้ไข” -> ไปหน้า /registeruser/form?count=
   function goToFormCount() {
     setSuccessMessage(null);
     setErrorMessage(null);
 
-    // ✅ ไม่บังคับ “โรงแรม/สลิป” ตอนกดปุ่มนี้
     if (!region) return setErrorMessage('กรุณาเลือกสังกัดภาค / ศาลกลาง');
-    if (!organization.trim()) return setErrorMessage('กรุณาเลือกหน่วยงาน / ศาล');
+    if (!organization.trim()) return setErrorMessage('กรุณากรอกชื่อหน่วยงาน / ศาล');
     if (!province.trim()) return setErrorMessage('กรุณากรอกจังหวัด');
     if (!coordinatorName.trim()) return setErrorMessage('กรุณากรอกชื่อ-สกุลผู้ประสานงาน');
     if (!coordinatorPhone.trim()) return setErrorMessage('กรุณากรอกเบอร์โทรศัพท์ผู้ประสานงาน');
@@ -299,11 +313,10 @@ export default function RegisterUserPage() {
     setSuccessMessage(null);
     setErrorMessage(null);
 
-    const actualHotelName =
-      hotelSelect === '__other' ? hotelOther.trim() : hotelSelect.trim();
+    const actualHotelName = hotelSelect === '__other' ? hotelOther.trim() : hotelSelect.trim();
 
     if (!region) return setErrorMessage('กรุณาเลือกสังกัดภาค / ศาลกลาง');
-    if (!organization.trim()) return setErrorMessage('กรุณาเลือกหน่วยงาน / ศาล');
+    if (!organization.trim()) return setErrorMessage('กรุณากรอกชื่อหน่วยงาน / ศาล');
     if (!province.trim()) return setErrorMessage('กรุณากรอกจังหวัด');
     if (!coordinatorName.trim()) return setErrorMessage('กรุณากรอกชื่อ-สกุลผู้ประสานงาน');
     if (!coordinatorPhone.trim()) return setErrorMessage('กรุณากรอกเบอร์โทรศัพท์ผู้ประสานงาน');
@@ -353,7 +366,7 @@ export default function RegisterUserPage() {
           // ignore
         }
         const msg =
-          (data && typeof data === 'object' && 'message' in data && data.message) ||
+          (data && typeof data === 'object' && 'message' in data && (data as any).message) ||
           'ไม่สามารถบันทึกข้อมูลได้';
         throw new Error(String(msg));
       }
@@ -370,18 +383,23 @@ export default function RegisterUserPage() {
     }
   }
 
+  // ✅ คำนวณค่า select ให้ “เหมือนเดิม” แต่ถ้าพิมพ์เองจะไปอยู่ option "กำหนดเอง"
+  const organizationSelectValue = useMemo(() => {
+    if (!region) return '';
+    if (!organization.trim()) return '';
+    return currentOrganizations.includes(organization) ? organization : '__custom';
+  }, [region, organization, currentOrganizations]);
+
   return (
     <main className="registeruser-page">
       <div className="registeruser-card">
         <header className="registeruser-header">
           <h1>
-            แบบฟอร์มลงทะเบียนการประชุมสัมมนาทางวิชาการ
-            ผู้พิพากษาสมทบในศาลเยาวชนและครอบครัว
+            แบบฟอร์มลงทะเบียนการประชุมสัมมนาทางวิชาการ ผู้พิพากษาสมทบในศาลเยาวชนและครอบครัว
             ทั่วราชอาณาจักร ประจำปี ๒๕๖๙
           </h1>
           <p>
-            สำหรับผู้พิพากษาหัวหน้าศาลฯ และผู้พิพากษาสมทบ
-            กรุณากรอกข้อมูลให้ครบถ้วนก่อนกดส่งแบบฟอร์ม
+            สำหรับผู้พิพากษาหัวหน้าศาลฯ และผู้พิพากษาสมทบ กรุณากรอกข้อมูลให้ครบถ้วนก่อนกดส่งแบบฟอร์ม
           </p>
         </header>
 
@@ -415,15 +433,17 @@ export default function RegisterUserPage() {
               </select>
             </div>
 
+            {/* ✅ “เหมือนเดิม” (dropdown) + “แก้ไขได้” (input) */}
             <div className="registeruser-field">
-              <label htmlFor="organization" className="registeruser-label">
+              <label htmlFor="organizationSelect" className="registeruser-label">
                 ชื่อหน่วยงาน / ศาล *
               </label>
+
               <select
-                id="organization"
+                id="organizationSelect"
                 className="registeruser-select"
-                value={organization}
-                onChange={handleOrganizationChange}
+                value={organizationSelectValue}
+                onChange={handleOrganizationSelect}
                 required
                 disabled={!region || currentOrganizations.length === 0}
               >
@@ -432,12 +452,28 @@ export default function RegisterUserPage() {
                     ? '-- เลือกศาลเยาวชนและครอบครัว / แผนกฯ --'
                     : 'กรุณาเลือกสังกัดภาค / ศาลกลางก่อน'}
                 </option>
+
                 {currentOrganizations.map((org) => (
                   <option key={org} value={org}>
                     {org}
                   </option>
                 ))}
+
+                <option value="__custom">กำหนดเอง (พิมพ์แก้ไขด้านล่าง)</option>
               </select>
+
+              <input
+                id="organization"
+                type="text"
+                className="registeruser-input"
+                value={organization}
+                onChange={handleOrganizationInput}
+                required
+                disabled={!region}
+                placeholder={
+                  region ? 'เลือกจากด้านบนแล้วสามารถแก้ไขข้อความได้ที่ช่องนี้' : 'กรุณาเลือกสังกัดภาค / ศาลกลางก่อน'
+                }
+              />
             </div>
 
             <div className="registeruser-field">
@@ -499,7 +535,6 @@ export default function RegisterUserPage() {
                 value={totalInput}
                 onChange={(e) => setTotalInput(e.target.value)}
                 onKeyDown={(e) => {
-                  // ✅ กัน Enter แล้วไป submit form โดยไม่ตั้งใจ
                   if (e.key === 'Enter') {
                     e.preventDefault();
                     goToFormCount();
@@ -518,10 +553,6 @@ export default function RegisterUserPage() {
                   {completed ? 'แก้ไข' : 'บันทึกจำนวนผู้เข้าร่วม'}
                 </button>
               </div>
-
-              {/* <p className="registeruser-help">
-                เมื่อกดปุ่ม ระบบจะไปหน้า <b>/registeruser/form?count=</b> เพื่อกรอกข้อมูลผู้เข้าร่วม
-              </p> */}
             </div>
           </section>
 
